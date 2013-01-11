@@ -1,10 +1,10 @@
-========================================
+=========================================
  rtsched: The Real-Time scheduling style
-========================================
+=========================================
 
-Author: Giuseppe Lipari (g.lipari@sssup.it)
-Version: 1.0
-Date:    2011/09/29
+Author:  Giuseppe Lipari (g.lipari@sssup.it)
+Version: 1.1
+Date:    2013/01/11
 
 This package contains the rtsched package for drawing GANTT charts
 (chronograms). The package can be useful for drawing real-time timing
