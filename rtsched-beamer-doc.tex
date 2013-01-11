@@ -1,0 +1,105 @@
+\documentclass[dvips]{beamer}
+
+\usepackage{rtsched}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+
+\title{An example of using the \texttt{rtsched} package with Beamer}
+\author{Giuseppe Lipari}
+\institute[Scuola Superiore Sant'Anna]{Scuola Superiore Sant'Anna -- Pisa}
+
+\usetheme{Madrid}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{An example with fixed priority}
+  \transduration<2-15>{.5}
+  \begin{itemize}
+  \item After you click on this slides, an animation will start where
+    every move in the schedule is shown for half a second.
+  \end{itemize}
+  \begin{figure}
+    \centering
+    \begin{RTGrid}[width=.7\textwidth]{2}{20}
+      %% the first job of task 1 arrives at time 0, 
+      %% with a relative deadline of 4 
+      \only<+->{
+        \TaskArrDead{1}{0}{4}     
+        \TaskArrDead{2}{0}{4}
+      }
+      \TaskExecution<+->{1}{0}{1}
+      \TaskExecution<+->{2}{1}{4}
+
+      \TaskArrDead<+->{1}{4}{4}
+      \TaskExecution<+->{1}{4}{5}
+
+      \TaskArrDead<+->{2}{6}{4}
+      \TaskExecution<+->{2}{6}{8}
+      \TaskArrDead<+->{1}{8}{4}
+      \TaskExecution<+->{1}{8}{9}
+      \TaskExecution<+->{2}{9}{10}
+      
+      \only<+->{
+        \TaskArrDead{1}{12}{4}
+        \TaskArrDead{2}{12}{4}
+      }
+      \TaskExecution<+->{1}{12}{13}
+      \TaskExecution<+->{2}{13}{16}
+      
+      \TaskArrDead<+->{1}{16}{4}
+      \TaskExecution<+->{1}{16}{17}
+    \end{RTGrid}
+  \end{figure}
+  \begin{itemize}
+  \item<+-> You can now click to move to the next slide
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A simple RTBox to highlight part of the schedule}
+  \transduration<2-22>{.2}
+  \begin{itemize}
+  \item Now, when you click an animation will start that shows a
+    hatched box from time 6 to time 10 in ``slow motion''
+  \end{itemize}
+  \begin{figure}
+    \centering
+    \begin{RTGrid}[width=.7\textwidth]{2}{20}
+      \multido{\i=2+1,\n=6+.2}{20} {
+        \RTBox<\i>{6}{\n}
+      }
+      \RTBox<23>{6}{10}
+
+      \multido{\n=0+4}{5}{        % 5 instances of period 4 
+        \TaskArrDead{1}{\n}{4}    % draw the arrival and deadline
+        \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
+        % from \n to \n+1
+      }
+      
+      \multido{\n=0+6}{3}{        % 3 instances of period 6 
+        \TaskArrDead{2}{\n}{6}    % draw the arrival and deadline
+      }
+      % no simple formula for lowest priority, sorry!
+      \TaskExecution{2}{1}{4}
+      \TaskExecution{2}{6}{8}
+      \TaskExecution{2}{9}{10}
+      \TaskExecution{2}{13}{16}
+
+    \end{RTGrid}
+  \end{figure}
+  \begin{itemize}
+  \item<23> Again, you can now click to move to next animation
+  \end{itemize}
+\end{frame}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

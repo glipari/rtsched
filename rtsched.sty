@@ -1,0 +1,469 @@
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{rtsched}[2005/01/01]
+\typeout{'rtsched' style for Latex and PSTricks}
+\typeout{Easily draw real-time schedules in TeX/Latex.}
+\typeout{(c) 2005, Giuseppe Lipari, Pisa, Italy (g.lipari@sssup.it)}
+\typeout{Version 1.0}
+
+\RequirePackage{multido}
+\RequirePackage{pstricks}
+\RequirePackage{keyval}
+
+%%
+%% These can be changed at any time
+%% 
+\def\RTWindowLength{10cm}    % window length
+\def\RTWindowHeight{0cm}     % window height
+\def\RTNullWindowHeight{0cm} % nullwindow height
+\def\RTTaskLabelSize{10pt}   % Size in pt of the task label
+\def\RTNumberLabelSize{10pt} % Size in pt of the number labels
+\def\RTDefTaskSymbol{\tau}
+\def\RTDefNumberOffset{0}
+\def\RTDefTaskFill{solid}
+\def\RTDefTaskColor{gray}
+\def\RTDefLineColor{black}
+\def\RTDefXScale{1}
+\def\RTDefWriteSymbols{0}
+\def\RTDefGridInvisible{0}
+\def\RTDefNumbersInvisible{0}
+\def\RTDefRowLabelOffset{0pt}
+
+\def\RTExecLabel{\ }
+\def\RTTaskSymbol{\RTDefTaskSymbol}
+\def\RTTaskFill{\RTDefTaskFill}
+\def\RTTaskColor{\RTDefTaskColor}
+\def\RTLineColor{\RTDefLineColor}
+\def\RTXScale{\RTDefXScale}
+\def\RTWriteSymbols{\RTDefWriteSymbols}
+\def\RTNumberOffset{\RTDefNumberOffset}
+\def\RTNumberOffset{\RTDefNumberOffset}
+\def\RTGridInvisible{\RTDefGridInvisible}
+\def\RTNumbersInvisible{\RTDefGridInvisible}
+\def\RTRowLabelOffset{\RTDefRowLabelOffset}
+
+\define@key{RT}{height}[\RTNullWindowHeight]{\def\RTWindowHeight{#1}}
+\define@key{RT}{width}[10cm]{\def\RTWindowLength{#1}}
+\define@key{RT}{labelsize}[10pt]{\def\RTTaskLabelSize{#1}}
+\define@key{RT}{numbersize}[10pt]{\def\RTNumberLabelSize{#1}}
+\define@key{RT}{color}[\RTDefTaskColor]{\def\RTTaskColor{#1}}
+\define@key{RT}{linecolor}[\RTDefLineColor]{\def\RTLineColor{#1}}
+\define@key{RT}{execlabel}[\ ]{\def\RTExecLabel{#1}}
+\define@key{RT}{fillstyle}[\RTDefTaskFill]{\def\RTTaskFill{#1}}
+\define@key{RT}{nocommand}{}
+\define@key{RT}{xscale}[\RTDefXScale]{\def\RTXScale{#1}}
+\define@key{RT}{symbol}[{\tau}]{\def\RTTaskSymbol{#1}}
+\define@key{RT}{nosymbols}[\RTDefWriteSymbols]{\def\RTWriteSymbols{#1}}
+\define@key{RT}{numoffset}[\RTDefNumberOffset]{\def\RTNumberOffset{#1}}
+\define@key{RT}{nogrid}[\RTDefGridInvisible]{\def\RTGridInvisible{#1}}
+\define@key{RT}{nonumbers}[\RTDefNumbersInvisible]{\def\RTNumbersInvisible{#1}}
+\define@key{RT}{labeloffset}[\RTDefRowLabelOffset]{\def\RTRowLabelOffset{#1}}
+
+
+%%
+%% temporaries
+\newdimen\sx % slot length
+\newdimen\sy % slot height
+\newdimen\hy % frame height
+\newdimen\xx % x position
+\newdimen\yy % y position
+\newdimen\xxx % x position
+\newdimen\yyy % y position
+\newcount\nsx % number of horizontal slots
+\newcount\nsy % number of vertical slots
+\newcount\nhl % number of horizonatal lines
+\newcount\nvl % number of vertical lines
+\newcount\tmp % temp
+
+\newcounter{myLabel}
+
+\def\RTGrid{\@ifnextchar[\@mygrid@begin{\@mygrid@begin[]}}
+
+\def\RTGridBegin{\@ifnextchar[\@mygrid@begin{\@mygrid@begin[]}}
+\def\@mygrid@begin[#1]#2#3{\setkeys{RT}{#1}%
+  %% number of horizontal steps in the grid
+  \nsx = #3 \advance \nsx by 2 %
+  %% real lenght of the window (approx)
+  \nvl = \nsx \advance \nvl by 1 %
+  %% compute lenght of a step
+  \sx = \RTWindowLength \divide \sx by \nsx %
+  %% number of vertical steps in the grid
+  \nsy = #2 \multiply \nsy by 3 \advance \nsy by 1 %
+  %% compute lenght of a vertical step (if height is null, \sy is the
+  %% same as \sx)
+  \ifx\RTWindowHeight\RTNullWindowHeight%
+    \sy = \sx%
+    \hy = \sy \multiply \hy by \nsy \advance \hy by \sy%
+  \else 
+    \sy = \RTWindowHeight \divide \sy by \nsy %
+    \hy = \RTWindowHeight \advance \hy by \sy %
+  \fi
+  %% compute real height
+  \nhl = \nsy \advance \nhl by 1 %
+  \advance \nsy by -1 \advance \nsx by -1
+  %% the picture
+  \begin{pspicture}(0,0)(\RTWindowLength,\hy) %
+    %% draw grid (if not invisible)
+    \if\RTGridInvisible\RTDefGridInvisible
+      \multips(0,\sy)(0,\sy){\nsy}{\psline[linecolor=lightgray]{-}(0,\sy)(\RTWindowLength,\sy)}%
+      \multips(\sx,0)(\sx,0){\nsx}{\psline[linecolor=lightgray]{-}(0,\sy)(0,\hy)}%
+      \psframe(0,\sy)(\RTWindowLength,\hy)%
+    \else\relax
+    \fi
+    %% draw numbers (if not invisible)
+    \if\RTNumbersInvisible\RTDefNumbersInvisible
+      \tmp = #3 \divide \tmp by 2 \advance \tmp by 1%
+      \pssetlength{\xx}{\sx}%
+      \setcounter{myLabel}{\RTNumberOffset}
+      \multido{\n=0+1}{\tmp}{%
+        \uput{4pt}[d](\xx,\sy){%
+          \usefont{T1}{phv}{m}{n}%
+          \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+          \selectfont{\arabic{myLabel}}}%
+        \psaddtolength{\xx}{\sx}%
+        \psaddtolength{\xx}{\sx}%
+        \addtocounter{myLabel}{2}
+      }
+    \else\relax
+    \fi
+    % 
+    %% Task Names
+    \setcounter{myLabel}{1}
+    \pssetlength{\yy}{\hy}%
+    \psaddtolength{\yy}{-\sy}
+    \multido{\n=0+1}{#2}{%
+      \uput{4pt}[d](-\sx,\yy){
+        \usefont{T1}{phv}{m}{n}
+        \fontsize{\RTTaskLabelSize}{\RTTaskLabelSize}
+        \if\RTWriteSymbols\RTDefWriteSymbols\selectfont{$\RTTaskSymbol_{\arabic{myLabel}}$}
+          \else\relax
+        \fi
+      }%
+      \psaddtolength{\yy}{-3\sy}%
+      \addtocounter{myLabel}{1}
+    }%    
+    %% Horizontal axes
+    \xx = \sx \xxx = \RTWindowLength \advance \xxx by -\sx
+    \yy = 2\sy 
+    \multido{\n=0+1}{#2}{
+      \psline{->}(\xx,\yy)(\xxx,\yy)
+      \advance \yy by 3\sy
+    }
+}
+
+
+\def\@RTDefaultValues{%
+  \setkeys{RT}{height}%
+  \setkeys{RT}{width}%
+  \setkeys{RT}{labelsize}%
+  \setkeys{RT}{numbersize}%
+  \setkeys{RT}{symbol}%
+  \setkeys{RT}{fillstyle}%
+  \setkeys{RT}{color}
+  \setkeys{RT}{linecolor}%
+  \setkeys{RT}{xscale}%
+  \setkeys{RT}{nosymbols}%
+}
+
+\def\@RTExecDefaultValues{
+  \setkeys{RT}{color}%
+  \setkeys{RT}{execlabel}%
+  \setkeys{RT}{linecolor}%
+}
+
+\def\RTGridEnd{
+    \end{pspicture}%
+    \@RTDefaultValues%
+}
+
+\def\endRTGrid{
+    \end{pspicture}%
+    \@RTDefaultValues%
+}
+
+\newcommand{\RTSet}[1]{
+  \setkeys{RT}{#1}
+}
+
+\newcommand{\RTSetDefault}{
+  \@RTDefaultValues
+}
+
+%% internal
+\newcommand{\@compute@xx}[1]{
+  \xx = #1\sx
+  \divide \xx by \RTXScale
+  \advance \xx by \sx
+}
+
+\newcommand{\@compute@xxx}[1]{
+  \xxx = #1\sx
+  \divide \xxx by \RTXScale
+  \advance \xxx by \sx
+}
+
+\newcommand{\@compute@yy}[1]{
+  \yy = -3\sy \multiply \yy by #1
+  \advance \yy by \hy
+}
+
+
+%% Task Arrival: draws an up arrow at the specified slot
+%% #1  : task number from 1 to n
+%% #2  : slot number from 0 to l-1
+\newcommand{\TaskArrival}[3][nocommand=1]{%
+    \setkeys{RT}{#1}%
+    \@compute@yy{#2}
+    \@compute@xx{#3}
+    \yyy = \yy \advance \yyy by 2\sy%
+    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)%
+    \@RTExecDefaultValues%
+}
+
+%% Task Arrival and deadline: draws an up arrow and a down arrow at the specified slots
+%% #1  : task number from 1 to n
+%% #2  : slot number from 0 to l-1
+%% #3  : relative deadline
+\newcommand{\TaskArrDead}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by 2\sy
+  \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)
+  \advance \xx by #4\sx
+  \psline[linecolor=\RTLineColor]{->}(\xx,\yyy)(\xx,\yy)
+  \@RTExecDefaultValues
+}
+
+
+%% Task Deadline: draws a down arrow at the specified slot
+%% #1  : task number from 1 to n
+%% #2  : slot number from 0 to l-1
+\newcommand{\TaskDeadline}[3][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by 2\sy
+  \psline[linecolor=\RTLineColor]{<-}(\xx,\yy)(\xx,\yyy)
+  \@RTExecDefaultValues
+}
+
+\newcommand{\TaskExecution}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by \sy
+  \@compute@xxx{#4}
+  \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
+  \advance \xx by \xxx \xx = .5\xx
+  \uput{2pt}[u](\xx,\yy){%
+    \usefont{T1}{phv}{m}{n}%
+    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+    \selectfont{\RTExecLabel}%
+  }
+  \@RTExecDefaultValues
+}
+
+% Task Lock
+% par 1:  task 
+% par 2:  time
+% par 3:  resource
+%
+\newcommand{\TaskLock}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by \sy
+  \uput{2pt}[u](\xx,\yyy){%
+    \usefont{T1}{phv}{m}{n}%
+    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+    \selectfont{L(#4)}%
+  }
+  \@RTExecDefaultValues
+}
+
+% \TaskUnlock
+% par 1:  task 
+% par 2:  time
+% par 3:  resource
+%
+\newcommand{\TaskUnlock}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by \sy
+  \uput{2pt}[u](\xx,\yyy){%
+    \usefont{T1}{phv}{m}{n}%
+    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+    \selectfont{U(#4)}%
+  }
+  \@RTExecDefaultValues
+}
+
+% 
+% par 1:  number of vertical slot 
+% par 2:  time
+% par 3:  label
+%
+\newcommand{\Label}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  %\@compute@yy{#2}
+  \@compute@xx{#3}
+  \yy = -\sy \multiply \yy by #2
+  \advance \yy by \hy
+  \yyy = \yy \advance \yyy by \sy
+  \uput{2pt}[u](\xx,\yyy){%
+    \psshadowbox{
+      \usefont{T1}{phv}{m}{n}%
+      \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+      \selectfont{{#4}}}%
+  }
+  \@RTExecDefaultValues
+}
+
+% 
+% par 1:  higher priority task (from) 
+% par 2:  lower priority task (to)
+% par 3:  time
+%
+\newcommand{\Inherit}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#4}
+  \yyy = -3\sy \multiply \yyy by #3 \advance \yyy by \sy
+  \advance \yyy by \hy \advance \yyy by -\sy % \RTWindowHeight
+  \psline[linestyle=dashed,linewidth=1.5pt]{->}(\xx,\yy)(\xx,\yyy)
+  \@RTExecDefaultValues
+}
+
+% 
+% par 1:  activating task (from) 
+% par 2:  signal start time 
+% par 3:  activated task (to)
+% par 4:  signal arrival time
+%
+\newcommand{\Activation}[5][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = -3\sy \multiply \yyy by #4 %\advance \yyy by \sy
+  \advance \yyy by \hy %\advance \yyy by -\sy %\RTWindowHeight
+  \xxx = #5\sx \advance \xxx by \sx
+  \psline[linestyle=dashed,linewidth=1pt]{->}(\xx,\yy)(\xxx,\yyy)
+}
+
+% 
+% par 1:  time1
+% par 2:  time2
+%
+\newcommand{\RTBox}[3][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \yy = 0cm
+  \advance \yy by \hy
+  \yyy = \sy
+  \@compute@xx{#2}
+  \@compute@xxx{#3}
+  \psframe[fillstyle=crosshatch,hatchwidth=.2pt,hatchsep=2pt,hatchcolor=lightgray,linewidth=0pt,framearc=.2](\xx,\yy)(\xxx,\yyy)
+  \@RTExecDefaultValues
+}
+
+% %
+% % par 1: task
+% % par 2: first instant (arrival)
+% % par 3: second instant (deadline)
+% %
+% \newcommand{\Interval}[4][nocommand=1]{
+%   \setkeys{RT}{#1}%
+%   \@compute@yy{#2}
+%   \advance \yy by 2.5\sy
+%   \@compute@xx{#3}
+%   \@compute@xxx{#4}
+%   % da cambiare con psarc
+%   \pscurve*[linecolor=\RTLineColor]{-}(\xx,\yy)(\xxx,\yy)
+%   \@RTExecDefaultValues  
+% }
+
+\newcommand{\RowLabel}[3][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \advance \yy by 1.5\sy
+  \xx = \RTRowLabelOffset %\advance \xx by \sx
+  \uput{4pt}[dl](-\xx,\yy){
+    \usefont{T1}{phv}{m}{n}
+    \fontsize{\RTTaskLabelSize}{\RTTaskLabelSize}
+    \selectfont{#3}
+  }%
+}
+
+\newcommand{\TaskExecDelta}[4][nocommand=1]{
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by \sy
+  %\@compute@xxx{#4}
+  \xxx = \xx \advance \xxx by #4\sx
+  \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
+  \advance \xx by \xxx \xx = .5\xx
+  \uput{2pt}[u](\xx,\yy){%
+    \usefont{T1}{phv}{m}{n}%
+    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
+    \selectfont{\RTExecLabel}%
+  }
+  \@RTExecDefaultValues
+}
+
+\newcommand{\TaskRespTime}[4][nocommand=1]{
+  \setkeys{RT}{#1}
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by \sy  
+  \xxx = \xx \advance \xxx by #4\sx
+  \psframe[fillstyle=crosshatch*,hatchcolor=white,
+  hatchwidth=.4pt,hatchsep=1pt,
+  linestyle=none,fillcolor=\RTTaskColor](\xx,\yy)(\xxx,\yyy)
+  \@RTExecDefaultValues
+}
+
+\@ifclassloaded{beamer}{
+  \renewcommand<>{\TaskArrival}[3][nocommand=1]{
+    \only#4{\beameroriginal{\TaskArrival}[#1]{#2}{#3}}
+  }
+  \renewcommand<>{\TaskArrDead}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskArrDead}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskDeadline}[3][nocommand=1]{
+    \only#4{\beameroriginal{\TaskDeadline}[#1]{#2}{#3}}
+  }
+  \renewcommand<>{\TaskExecution}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskExecution}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskExecDelta}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskExecDelta}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskRespTime}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskRespTime}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskLock}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskLock}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskUnlock}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskUnlock}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\Label}[4][nocommand=1]{
+    \only#5{\beameroriginal{\Label}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\Inherit}[4][nocommand=1]{
+    \only#5{\beameroriginal{\Inherit}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\Activation}[5][nocommand=1]{
+    \only#6{\beameroriginal{\Activation}[#1]{#2}{#3}{#4}{#5}}
+  }
+  \renewcommand<>{\RTBox}[3][nocommand=1]{
+    \only#4{\beameroriginal{\RTBox}[#1]{#2}{#3}}
+  }  
+}
+{
+  \typeout{beamer not loaded}
+}
+
+\endinput
+
