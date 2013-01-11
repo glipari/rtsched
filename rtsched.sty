@@ -3,7 +3,7 @@
 \typeout{'rtsched' style for Latex and PSTricks}
 \typeout{Easily draw real-time schedules in TeX/Latex.}
 \typeout{(c) 2005, Giuseppe Lipari, Pisa, Italy (g.lipari@sssup.it)}
-\typeout{Version 1.0}
+\typeout{Version 1.1}
 
 \RequirePackage{multido}
 \RequirePackage{pstricks}
@@ -27,6 +27,9 @@
 \def\RTDefGridInvisible{0}
 \def\RTDefNumbersInvisible{0}
 \def\RTDefRowLabelOffset{0pt}
+\def\RTDefAxisInvisible{0}
+\def\RTDefLineWidth{1pt}
+\def\RTDefLineStyle{solid}
 
 \def\RTExecLabel{\ }
 \def\RTTaskSymbol{\RTDefTaskSymbol}
@@ -38,8 +41,11 @@
 \def\RTNumberOffset{\RTDefNumberOffset}
 \def\RTNumberOffset{\RTDefNumberOffset}
 \def\RTGridInvisible{\RTDefGridInvisible}
+\def\RTAxisInvisible{\RTDefAxisInvisible}
 \def\RTNumbersInvisible{\RTDefGridInvisible}
 \def\RTRowLabelOffset{\RTDefRowLabelOffset}
+\def\RTLineWidth{\RTDefLineWidth}
+\def\RTLineStyle{\RTDefLineStyle}
 
 \define@key{RT}{height}[\RTNullWindowHeight]{\def\RTWindowHeight{#1}}
 \define@key{RT}{width}[10cm]{\def\RTWindowLength{#1}}
@@ -57,7 +63,9 @@
 \define@key{RT}{nogrid}[\RTDefGridInvisible]{\def\RTGridInvisible{#1}}
 \define@key{RT}{nonumbers}[\RTDefNumbersInvisible]{\def\RTNumbersInvisible{#1}}
 \define@key{RT}{labeloffset}[\RTDefRowLabelOffset]{\def\RTRowLabelOffset{#1}}
-
+\define@key{RT}{axis}[\RTDefAxisInvisible]{\def\RTAxisInvisible{#1}}
+\define@key{RT}{lw}[\RTDefLineWidth]{\def\RTLineWidth{#1}}
+\define@key{RT}{style}[\RTDefLineStyle]{\def\RTLineStyle{#1}}
 
 %%
 %% temporaries
@@ -142,13 +150,17 @@
       \addtocounter{myLabel}{1}
     }%    
     %% Horizontal axes
-    \xx = \sx \xxx = \RTWindowLength \advance \xxx by -\sx
-    \yy = 2\sy 
-    \multido{\n=0+1}{#2}{
-      \psline{->}(\xx,\yy)(\xxx,\yy)
-      \advance \yy by 3\sy
-    }
+
+    \if\RTAxisInvisible\RTDefAxisInvisible
+      \xx = \sx \xxx = \RTWindowLength \advance \xxx by -\sx
+      \yy = 2\sy 
+      \multido{\n=0+1}{#2}{
+        \psline{->}(\xx,\yy)(\xxx,\yy)
+        \advance \yy by 3\sy
+      }
+    \fi
 }
+
 
 
 \def\@RTDefaultValues{%
@@ -206,6 +218,36 @@
   \advance \yy by \hy
 }
 
+\newcommand{\DrawTaskAxis}[2][nocommand=1]{%
+    \setkeys{RT}{#1}%
+    \@compute@yy{#2}
+    \@compute@xx{0}
+    \xxx = \RTWindowLength \advance \xxx by -\sx 
+    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xxx,\yy)%
+    \@RTExecDefaultValues%
+}
+
+\newcommand{\DrawXYAxis}[3][nocommand=1]{%
+    \setkeys{RT}{#1}%
+    \@compute@yy{#2}
+    \@compute@xx{0}
+    \xxx = \RTWindowLength \advance \xxx by -\sx 
+    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xxx,\yy)%
+    \yyy = 3\sy \multiply \yyy by #3 \advance \yyy by \yy
+    \advance \yyy by -\sy
+    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)%
+    \@RTExecDefaultValues%
+}
+
+\newcommand{\FLine}[5][nocommand=1]{%
+    \setkeys{RT}{#1}%
+    \@compute@xx{#2}
+    \@compute@xxx{#4}
+    \yy = #3\sy \advance \yy by 2\sy
+    \yyy = #5\sy \advance \yyy by 2\sy
+    \psline[linecolor=\RTLineColor,linestyle=\RTLineStyle,linewidth=\RTLineWidth]{-}(\xx,\yy)(\xxx,\yyy)
+    \@RTExecDefaultValues%
+}
 
 %% Task Arrival: draws an up arrow at the specified slot
 %% #1  : task number from 1 to n
@@ -460,10 +502,10 @@
   \renewcommand<>{\RTBox}[3][nocommand=1]{
     \only#4{\beameroriginal{\RTBox}[#1]{#2}{#3}}
   }  
+  \renewcommand<>{\FLine}[5][nocommand=1]{
+    \only#6{\beameroriginal{\FLine}[#1]{#2}{#3}{#4}{#5}}
+  }  
 }
-{
-  \typeout{beamer not loaded}
-}
+{\typeout{beamer not loaded}}
 
 \endinput
-
