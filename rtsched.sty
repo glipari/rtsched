@@ -3,7 +3,7 @@
 \typeout{'rtsched' style for Latex and PSTricks}
 \typeout{Easily draw real-time schedules in TeX/Latex.}
 \typeout{(c) 2005, Giuseppe Lipari, Pisa, Italy (g.lipari@sssup.it)}
-\typeout{Version 1.1}
+\typeout{Version 1.2beta}
 
 \RequirePackage{multido}
 \RequirePackage{pstricks}
@@ -30,6 +30,7 @@
 \def\RTDefAxisInvisible{0}
 \def\RTDefLineWidth{1pt}
 \def\RTDefLineStyle{solid}
+\def\RTDefExecHeight{1}
 
 \def\RTExecLabel{\ }
 \def\RTTaskSymbol{\RTDefTaskSymbol}
@@ -46,6 +47,7 @@
 \def\RTRowLabelOffset{\RTDefRowLabelOffset}
 \def\RTLineWidth{\RTDefLineWidth}
 \def\RTLineStyle{\RTDefLineStyle}
+\def\RTExecHeight{\RTDefExecHeight}
 
 \define@key{RT}{height}[\RTNullWindowHeight]{\def\RTWindowHeight{#1}}
 \define@key{RT}{width}[10cm]{\def\RTWindowLength{#1}}
@@ -66,6 +68,7 @@
 \define@key{RT}{axis}[\RTDefAxisInvisible]{\def\RTAxisInvisible{#1}}
 \define@key{RT}{lw}[\RTDefLineWidth]{\def\RTLineWidth{#1}}
 \define@key{RT}{style}[\RTDefLineStyle]{\def\RTLineStyle{#1}}
+\define@key{RT}{exeheight}[\RTDefExecHeight]{\def\RTExecHeight{#1}}
 
 %%
 %% temporaries
@@ -293,7 +296,7 @@
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
   \@compute@xx{#3}
-  \yyy = \yy \advance \yyy by \sy
+  \yyy = \yy \advance \yyy by \RTExecHeight\sy
   \@compute@xxx{#4}
   \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
   \advance \xx by \xxx \xx = .5\xx
@@ -440,7 +443,7 @@
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
   \@compute@xx{#3}
-  \yyy = \yy \advance \yyy by \sy
+  \yyy = \yy \advance \yyy by \RTExecHeight\sy
   %\@compute@xxx{#4}
   \xxx = \xx \advance \xxx by #4\sx
   \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
