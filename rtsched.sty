@@ -1,23 +1,43 @@
+  %% rtsched.sty
+  %% Copyright 2005 M. G. Lipari
+  %
+  % This work may be distributed and/or modified under the
+  % conditions of the LaTeX Project Public License, either version 1.3
+  % of this license or (at your option) any later version.
+  % The latest version of this license is in
+  %   http://www.latex-project.org/lppl.txt
+  % and version 1.3 or later is part of all distributions of LaTeX
+  % version 2005/12/01 or later.
+  %
+  % This work has the LPPL maintenance status `maintained'.
+  % 
+  % The Current Maintainer of this work is G. Lipari
+  %
+  % This work consists of the file pig.sty.
+  
+  
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
 \ProvidesPackage{rtsched}[2005/01/01]
-\typeout{'rtsched' style for Latex and PSTricks}
+\typeout{'rtsched' style for Latex and TikZ/PGF}
 \typeout{Easily draw real-time schedules in TeX/Latex.}
 \typeout{(c) 2005, Giuseppe Lipari, Pisa, Italy (g.lipari@sssup.it)}
-\typeout{Version 1.2beta}
+\typeout{Version 2.0}
 
-\RequirePackage{multido}
-\RequirePackage{pstricks}
+\RequirePackage{tikz}
+\usetikzlibrary{shadows, patterns}
 \RequirePackage{keyval}
+\newcommand\rtfont{\usefont{T1}{phv}{m}{n}}
+
 
 %%
 %% These can be changed at any time
 %% 
 \def\RTWindowLength{10cm}    % window length
-\def\RTWindowHeight{0cm}     % window height
-\def\RTNullWindowHeight{0cm} % nullwindow height
-\def\RTTaskLabelSize{10pt}   % Size in pt of the task label
-\def\RTNumberLabelSize{10pt} % Size in pt of the number labels
-\def\RTDefTaskSymbol{\tau}
+\def\RTWindowHeight{0}     % window height
+\def\RTNullWindowHeight{0} % nullwindow height
+\def\RTTaskLabelSize{\normalsize}   % font size the task label
+\def\RTNumberLabelSize{\normalsize} % font size of the number labels
+\def\RTDefTaskSymbol{\tau} 
 \def\RTDefNumberOffset{0}
 \def\RTDefTaskFill{solid}
 \def\RTDefTaskColor{gray}
@@ -31,6 +51,9 @@
 \def\RTDefLineWidth{1pt}
 \def\RTDefLineStyle{solid}
 \def\RTDefExecHeight{1}
+\def\RTArrowStyle{-stealth} %arrow style for deadlines, arrivals and horizontal axes
+% -{Triangle 45}[length=x] with length is a more modern arrow style but requires arrows.meta tikz library (available on latest texlive but rarely up to date on linux distribution)
+%-stealth is a predefined more classical arrow style
 
 \def\RTExecLabel{\ }
 \def\RTTaskSymbol{\RTDefTaskSymbol}
@@ -40,19 +63,21 @@
 \def\RTXScale{\RTDefXScale}
 \def\RTWriteSymbols{\RTDefWriteSymbols}
 \def\RTNumberOffset{\RTDefNumberOffset}
-\def\RTNumberOffset{\RTDefNumberOffset}
 \def\RTGridInvisible{\RTDefGridInvisible}
+\def\RTNumbersInvisible{\RTDefNumbersInvisible}
 \def\RTAxisInvisible{\RTDefAxisInvisible}
-\def\RTNumbersInvisible{\RTDefGridInvisible}
 \def\RTRowLabelOffset{\RTDefRowLabelOffset}
 \def\RTLineWidth{\RTDefLineWidth}
 \def\RTLineStyle{\RTDefLineStyle}
 \def\RTExecHeight{\RTDefExecHeight}
 
+
+
+
 \define@key{RT}{height}[\RTNullWindowHeight]{\def\RTWindowHeight{#1}}
-\define@key{RT}{width}[10cm]{\def\RTWindowLength{#1}}
-\define@key{RT}{labelsize}[10pt]{\def\RTTaskLabelSize{#1}}
-\define@key{RT}{numbersize}[10pt]{\def\RTNumberLabelSize{#1}}
+\define@key{RT}{width}[10]{\def\RTWindowLength{#1}}
+\define@key{RT}{labelsize}[\normalsize]{\def\RTTaskLabelSize{#1}}
+\define@key{RT}{numbersize}[\normalsize]{\def\RTNumberLabelSize{#1}}
 \define@key{RT}{color}[\RTDefTaskColor]{\def\RTTaskColor{#1}}
 \define@key{RT}{linecolor}[\RTDefLineColor]{\def\RTLineColor{#1}}
 \define@key{RT}{execlabel}[\ ]{\def\RTExecLabel{#1}}
@@ -70,8 +95,10 @@
 \define@key{RT}{style}[\RTDefLineStyle]{\def\RTLineStyle{#1}}
 \define@key{RT}{exeheight}[\RTDefExecHeight]{\def\RTExecHeight{#1}}
 
+
 %%
 %% temporaries
+
 \newdimen\sx % slot length
 \newdimen\sy % slot height
 \newdimen\hy % frame height
@@ -81,9 +108,12 @@
 \newdimen\yyy % y position
 \newcount\nsx % number of horizontal slots
 \newcount\nsy % number of vertical slots
-\newcount\nhl % number of horizonatal lines
+\newcount\nhl % number of horizontal lines
 \newcount\nvl % number of vertical lines
+\newcount\ntasks % number of tasks
+\newcount\ntaskslessone %number of tasks less one
 \newcount\tmp % temp
+
 
 \newcounter{myLabel}
 
@@ -91,81 +121,75 @@
 
 \def\RTGridBegin{\@ifnextchar[\@mygrid@begin{\@mygrid@begin[]}}
 \def\@mygrid@begin[#1]#2#3{\setkeys{RT}{#1}%
+  %% get the number of tasks
+  \ntasks = #2
+  \ntaskslessone = \ntasks
+  \advance \ntaskslessone by -1
   %% number of horizontal steps in the grid
   \nsx = #3 \advance \nsx by 2 %
-  %% real lenght of the window (approx)
+  %% real length of the window (approx)
   \nvl = \nsx \advance \nvl by 1 %
-  %% compute lenght of a step
+  %% compute length of a step
   \sx = \RTWindowLength \divide \sx by \nsx %
   %% number of vertical steps in the grid
   \nsy = #2 \multiply \nsy by 3 \advance \nsy by 1 %
-  %% compute lenght of a vertical step (if height is null, \sy is the
+  %% compute length of a vertical step (if height is null, \sy is the
   %% same as \sx)
   \ifx\RTWindowHeight\RTNullWindowHeight%
     \sy = \sx%
-    \hy = \sy \multiply \hy by \nsy \advance \hy by \sy%
+    \hy = \sy \multiply \hy by \nsy %\advance \hy by \sy%
   \else 
     \sy = \RTWindowHeight \divide \sy by \nsy %
-    \hy = \RTWindowHeight \advance \hy by \sy %
+    \hy = \RTWindowHeight %\advance \hy by \sy %
   \fi
   %% compute real height
   \nhl = \nsy \advance \nhl by 1 %
   \advance \nsy by -1 \advance \nsx by -1
   %% the picture
-  \begin{pspicture}(0,0)(\RTWindowLength,\hy) %
+  \pgfdeclarelayer{foreground} 
+  \pgfsetlayers{main,foreground}
+
+  \begin{tikzpicture}
     %% draw grid (if not invisible)
     \if\RTGridInvisible\RTDefGridInvisible
-      \multips(0,\sy)(0,\sy){\nsy}{\psline[linecolor=lightgray]{-}(0,\sy)(\RTWindowLength,\sy)}%
-      \multips(\sx,0)(\sx,0){\nsx}{\psline[linecolor=lightgray]{-}(0,\sy)(0,\hy)}%
-      \psframe(0,\sy)(\RTWindowLength,\hy)%
+      \draw[lightgray, semithick] (0,0) grid[xstep = \sx,ystep=\sy ] (\RTWindowLength,\hy);
+    %% draw border grid
+      \draw [black, thick] (0,0) rectangle (\RTWindowLength,\hy);
     \else\relax
     \fi
+
     %% draw numbers (if not invisible)
     \if\RTNumbersInvisible\RTDefNumbersInvisible
-      \tmp = #3 \divide \tmp by 2 \advance \tmp by 1%
-      \pssetlength{\xx}{\sx}%
-      \setcounter{myLabel}{\RTNumberOffset}
-      \multido{\n=0+1}{\tmp}{%
-        \uput{4pt}[d](\xx,\sy){%
-          \usefont{T1}{phv}{m}{n}%
-          \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-          \selectfont{\arabic{myLabel}}}%
-        \psaddtolength{\xx}{\sx}%
-        \psaddtolength{\xx}{\sx}%
-        \addtocounter{myLabel}{2}
-      }
-    \else\relax
+       \foreach \i [evaluate = \i as \j using \i*\sx] in {0,...,#3}{
+       \ifodd \i
+       \else
+       \pgfmathsetmacro\nbwithoffset{\i + \RTNumberOffset};
+       \node[below, font=\RTNumberLabelSize \rtfont] at (\j +\sx , 0) {\pgfmathprintnumber[int trunc,/pgf/number format/assume math mode=true]{\nbwithoffset }};
+       \fi
+       }
+    \else
+    \relax
     \fi
-    % 
+
     %% Task Names
-    \setcounter{myLabel}{1}
-    \pssetlength{\yy}{\hy}%
-    \psaddtolength{\yy}{-\sy}
-    \multido{\n=0+1}{#2}{%
-      \uput{4pt}[d](-\sx,\yy){
-        \usefont{T1}{phv}{m}{n}
-        \fontsize{\RTTaskLabelSize}{\RTTaskLabelSize}
-        \if\RTWriteSymbols\RTDefWriteSymbols\selectfont{$\RTTaskSymbol_{\arabic{myLabel}}$}
-          \else\relax
-        \fi
-      }%
-      \psaddtolength{\yy}{-3\sy}%
-      \addtocounter{myLabel}{1}
-    }%    
+    \if\RTWriteSymbols\RTDefWriteSymbols
+     \foreach \i  [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+      \pgfmathsetmacro\task{\i + 1};
+      \node[below, font=\rtfont] at (-\sx , \j-\sy) {\RTTaskLabelSize $\RTTaskSymbol_{\pgfmathprintnumber[int trunc]{\task}}$};
+     }
+     \else\relax
+     \fi
+          
     %% Horizontal axes
-
     \if\RTAxisInvisible\RTDefAxisInvisible
-      \xx = \sx \xxx = \RTWindowLength \advance \xxx by -\sx
-      \yy = 2\sy 
-      \multido{\n=0+1}{#2}{
-        \psline{->}(\xx,\yy)(\xxx,\yy)
-        \advance \yy by 3\sy
+      \begin{pgfonlayer}{foreground} 
+      \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+      \draw [very thick,\RTArrowStyle] (\sx,\j-3*\sy) -- (\RTWindowLength - \sx,\j-3*\sy);
       }
-    \fi
+      \end{pgfonlayer} 
+    \fi 
 }
-
-
-
+ 
 \def\@RTDefaultValues{%
   \setkeys{RT}{height}%
   \setkeys{RT}{width}%
@@ -186,12 +210,12 @@
 }
 
 \def\RTGridEnd{
-    \end{pspicture}%
+    \end{tikzpicture}%
     \@RTDefaultValues%
 }
 
 \def\endRTGrid{
-    \end{pspicture}%
+    \end{tikzpicture}%
     \@RTDefaultValues%
 }
 
@@ -221,11 +245,13 @@
   \advance \yy by \hy
 }
 
+
 \newcommand{\DrawTaskAxis}[2][nocommand=1]{%
     \setkeys{RT}{#1}%
     \@compute@yy{#2}
     \@compute@xx{0}
     \xxx = \RTWindowLength \advance \xxx by -\sx 
+    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
     \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xxx,\yy)%
     \@RTExecDefaultValues%
 }
@@ -235,10 +261,10 @@
     \@compute@yy{#2}
     \@compute@xx{0}
     \xxx = \RTWindowLength \advance \xxx by -\sx 
-    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xxx,\yy)%
+    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xxx,\yy);
     \yyy = 3\sy \multiply \yyy by #3 \advance \yyy by \yy
     \advance \yyy by -\sy
-    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)%
+    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
     \@RTExecDefaultValues%
 }
 
@@ -248,7 +274,7 @@
     \@compute@xxx{#4}
     \yy = #3\sy \advance \yy by 2\sy
     \yyy = #5\sy \advance \yyy by 2\sy
-    \psline[linecolor=\RTLineColor,linestyle=\RTLineStyle,linewidth=\RTLineWidth]{-}(\xx,\yy)(\xxx,\yyy)
+    \draw [\RTLineColor, line width=\RTLineWidth,\RTLineStyle] (\xx,\yy) -- (\xxx,\yyy);
     \@RTExecDefaultValues%
 }
 
@@ -260,7 +286,10 @@
     \@compute@yy{#2}
     \@compute@xx{#3}
     \yyy = \yy \advance \yyy by 2\sy%
-    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)%
+     \begin{pgfonlayer}{foreground} 
+    \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+     \end{pgfonlayer}
+
     \@RTExecDefaultValues%
 }
 
@@ -273,9 +302,13 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by 2\sy
-  \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xx,\yyy)
+  \begin{pgfonlayer}{foreground} 
+  \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+  \end{pgfonlayer}
   \advance \xx by #4\sx
-  \psline[linecolor=\RTLineColor]{->}(\xx,\yyy)(\xx,\yy)
+  \begin{pgfonlayer}{foreground} 
+  \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yyy) -- (\xx,\yy);
+  \end{pgfonlayer}
   \@RTExecDefaultValues
 }
 
@@ -288,7 +321,9 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by 2\sy
-  \psline[linecolor=\RTLineColor]{<-}(\xx,\yy)(\xx,\yyy)
+  \begin{pgfonlayer}{foreground} 
+  \draw [\RTLineColor, thick,<-] (\xx,\yy) -- (\xx,\yyy);
+  \end{pgfonlayer}
   \@RTExecDefaultValues
 }
 
@@ -298,16 +333,12 @@
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \RTExecHeight\sy
   \@compute@xxx{#4}
-  \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
+ \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
   \advance \xx by \xxx \xx = .5\xx
-  \uput{2pt}[u](\xx,\yy){%
-    \usefont{T1}{phv}{m}{n}%
-    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-    \selectfont{\RTExecLabel}%
-  }
+ \draw (\xx,\yy) node[above, font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
   \@RTExecDefaultValues
 }
-
+%
 % Task Lock
 % par 1:  task 
 % par 2:  time
@@ -318,15 +349,11 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \sy
-  \uput{2pt}[u](\xx,\yyy){%
-    \usefont{T1}{phv}{m}{n}%
-    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-    \selectfont{L(#4)}%
-  }
+   \node[above,font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize L(#4)}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
-
-% \TaskUnlock
+%
+% TaskUnlock
 % par 1:  task 
 % par 2:  time
 % par 3:  resource
@@ -336,15 +363,11 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \sy
-  \uput{2pt}[u](\xx,\yyy){%
-    \usefont{T1}{phv}{m}{n}%
-    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-    \selectfont{U(#4)}%
-  }
+   \node[above, font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize U(#4)}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
-
-% 
+%
+% Label
 % par 1:  number of vertical slot 
 % par 2:  time
 % par 3:  label
@@ -355,17 +378,13 @@
   \@compute@xx{#3}
   \yy = -\sy \multiply \yy by #2
   \advance \yy by \hy
-  \yyy = \yy \advance \yyy by \sy
-  \uput{2pt}[u](\xx,\yyy){%
-    \psshadowbox{
-      \usefont{T1}{phv}{m}{n}%
-      \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-      \selectfont{{#4}}}%
-  }
+  \yyy = \yy \advance \yyy by 2\sy   %\yyy = \yy \advance \yyy by \sy
+
+  \node[font=\rtfont, fill = white, draw=\RTLineColor, thin,  drop shadow = {color = black}] at (\xx , \yyy) {\RTNumberLabelSize #4}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
-
-% 
+%
+% Inherit
 % par 1:  higher priority task (from) 
 % par 2:  lower priority task (to)
 % par 3:  time
@@ -376,16 +395,19 @@
   \@compute@xx{#4}
   \yyy = -3\sy \multiply \yyy by #3 \advance \yyy by \sy
   \advance \yyy by \hy \advance \yyy by -\sy % \RTWindowHeight
-  \psline[linestyle=dashed,linewidth=1.5pt]{->}(\xx,\yy)(\xx,\yyy)
+  \begin{pgfonlayer}{foreground} 
+  \draw [dashed, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+  \end{pgfonlayer}
   \@RTExecDefaultValues
 }
 
 % 
+% Activation
 % par 1:  activating task (from) 
 % par 2:  signal start time 
 % par 3:  activated task (to)
 % par 4:  signal arrival time
-%
+
 \newcommand{\Activation}[5][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
@@ -393,10 +415,14 @@
   \yyy = -3\sy \multiply \yyy by #4 %\advance \yyy by \sy
   \advance \yyy by \hy %\advance \yyy by -\sy %\RTWindowHeight
   \xxx = #5\sx \advance \xxx by \sx
-  \psline[linestyle=dashed,linewidth=1pt]{->}(\xx,\yy)(\xxx,\yyy)
+   \begin{pgfonlayer}{foreground} 
+  \draw [dashed, thick,\RTArrowStyle] (\xx,\yy) -- (\xxx,\yyy);
+   \end{pgfonlayer}
+
 }
 
 % 
+% RTBox
 % par 1:  time1
 % par 2:  time2
 %
@@ -404,14 +430,16 @@
   \setkeys{RT}{#1}%
   \yy = 0cm
   \advance \yy by \hy
-  \yyy = \sy
+    \yyy = 0cm  %  \yyy = \sy
   \@compute@xx{#2}
   \@compute@xxx{#3}
-  \psframe[fillstyle=crosshatch,hatchwidth=.2pt,hatchsep=2pt,hatchcolor=lightgray,linewidth=0pt,framearc=.2](\xx,\yy)(\xxx,\yyy)
+   \draw [pattern color=lightgray, draw=\RTLineColor, pattern=crosshatch, rounded corners, thin](\xx,\yy) rectangle (\xxx,\yyy);
   \@RTExecDefaultValues
 }
 
-% %
+
+
+%% %
 % % par 1: task
 % % par 2: first instant (arrival)
 % % par 3: second instant (deadline)
@@ -426,47 +454,58 @@
 %   \pscurve*[linecolor=\RTLineColor]{-}(\xx,\yy)(\xxx,\yy)
 %   \@RTExecDefaultValues  
 % }
+%
 
+
+% 
+% RowLabel
+% par 1:  task
+% par 2:  label
+%
 \newcommand{\RowLabel}[3][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
   \advance \yy by 1.5\sy
   \xx = \RTRowLabelOffset %\advance \xx by \sx
-  \uput{4pt}[dl](-\xx,\yy){
-    \usefont{T1}{phv}{m}{n}
-    \fontsize{\RTTaskLabelSize}{\RTTaskLabelSize}
-    \selectfont{#3}
-  }%
+  \node[below left,font=\rtfont] at (-\xx , \yy) {\RTTaskLabelSize #3};%\RTTaskLabelSize
 }
 
+% 
+% TaskExecDelta
+% par 1:  task
+% par 2:  start time
+% par 3:  delta
+%
 \newcommand{\TaskExecDelta}[4][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
   \@compute@xx{#3}
-  \yyy = \yy \advance \yyy by \RTExecHeight\sy
+  \yyy = \yy \advance \yyy by \RTExecHeight \sy
   %\@compute@xxx{#4}
   \xxx = \xx \advance \xxx by #4\sx
-  \psframe[fillstyle=\RTTaskFill,fillcolor=\RTTaskColor,linecolor=\RTLineColor](\xx,\yy)(\xxx,\yyy)
+   \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
   \advance \xx by \xxx \xx = .5\xx
-  \uput{2pt}[u](\xx,\yy){%
-    \usefont{T1}{phv}{m}{n}%
-    \fontsize{\RTNumberLabelSize}{\RTNumberLabelSize}%
-    \selectfont{\RTExecLabel}%
-  }
+   \draw (\xx,\yy) node[above, font=\rtfont] {\RTTaskLabelSize \RTExecLabel}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
 
+
+% 
+% TaskRespTime
+% par 1:  task
+% par 2:  start time
+% par 3:  finish time
+%
 \newcommand{\TaskRespTime}[4][nocommand=1]{
   \setkeys{RT}{#1}
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \sy  
   \xxx = \xx \advance \xxx by #4\sx
-  \psframe[fillstyle=crosshatch*,hatchcolor=white,
-  hatchwidth=.4pt,hatchsep=1pt,
-  linestyle=none,fillcolor=\RTTaskColor](\xx,\yy)(\xxx,\yyy)
+  \draw [pattern color=\RTTaskColor,draw=\RTLineColor, pattern=crosshatch, thin] (\xx,\yy) rectangle (\xxx,\yyy);
   \@RTExecDefaultValues
 }
+
 
 \@ifclassloaded{beamer}{
   \renewcommand<>{\TaskArrival}[3][nocommand=1]{
@@ -512,3 +551,4 @@
 {\typeout{beamer not loaded}}
 
 \endinput
+

@@ -2,8 +2,9 @@
 
 \usepackage{rtsched}
 \usepackage{url}
+\usepackage{multido}
 
-\title{The \texttt{rtsched} package for \LaTeX \\ (version 1.0)}
+\title{The \texttt{rtsched} package for \LaTeX \\ (version 2.0)}
 \author{Giuseppe Lipari}
 
 \begin{document}
@@ -18,19 +19,12 @@ In this document, I give an overview of the \texttt{rtsched} \LaTeX
 package, which can be used to easily draw chronograms (GANTT charts).
 These diagrams are quite common in real-time scheduling research.
 
-The package depends on keyval, multido and pstricks, all widely
+The package depends on keyval and TikZ/PGF, both widely
 available on any \TeX distribution.
 
-The drawing capabilities are completely based on the PSTricks: for
-this reason, it may not be safe to use \texttt{pdfLaTeX} to compile a
-document that uses the \texttt{rtsched} package, due to the fact that
-at the time of this writing, PSTricks is not well supported by
-pdfLatex. If you want to produce pdf files (for example for making
-slides with Beamer), consider using the following compilation chain:
-
-\begin{verbatim}
-latex doc.tex && dvips doc.dvi && ps2pdf doc.ps 
-\end{verbatim}
+The drawing capabilities are completely based on TikZ. Thus, you can compile
+ a document that uses \texttt{rtsched} package with modern tools producing pdf document
+as \texttt{pdfLaTeX}, \texttt{XeLaTeX} or \texttt{LuaLaTeX}.
 
 As said, the style works also with Beamer, and it is also possible to
 use animations.
@@ -73,12 +67,12 @@ using the following commands:
 \TaskArrDeadl{i}{t}{reld}
 \end{verbatim}
 \noindent where \texttt{i} is the task index (from 1 to \texttt{n}
-included), \texttt{t} is the arival time, and \texttt{reld} is the
+included), \texttt{t} is the arrival time, and \texttt{reld} is the
 relative deadline; an absolute deadline will be drawn at \texttt{t +
   reld}.
 
 In this example there are a lot of repetitions. These can be avoided
-if you use the \texttt{multido} macro, as shown in the example of
+if you use the \texttt{multido} macro from the \texttt{multido} package, as shown in the example of
 Figure \ref{fig:ex1a}.
 
 To draw the execution rectangle, you can use the following command:
@@ -95,7 +89,7 @@ arrows, and how to specify offsets. Finally, in Figure \ref{fig:ex1c}
 you can see an example with 2 tasks with relative deadlines different
 from periods (the so-called \emph{constrained deadline tasks}).
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   % 2 tasks, for 20 units of time
   % we specify the width (10cm is the default
@@ -163,17 +157,17 @@ from periods (the so-called \emph{constrained deadline tasks}).
   \label{fig:ex1}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   \begin{RTGrid}{2}{20}
     \multido{\n=0+4}{5}{        % 5 instances of period 4 
-      \TaskArrDead{1}{\n}{4}    % draw the arrival and deadline
-      \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
+      \TaskArrDead{1}{\n}{4}    % draws the arrival and deadline
+      \TaskExecDelta{1}{\n}{1}  % draws execution (highest priority), 
                                 % from \n to \n+1
     }
  
     \multido{\n=0+6}{3}{        % 3 instances of period 6 
-      \TaskArrDead{2}{\n}{6}    % draw the arrival and deadline
+      \TaskArrDead{2}{\n}{6}    % draws the arrival and deadline
     }
     % no simple formula for lowest priority, sorry!
     \TaskExecution{2}{1}{4}
@@ -185,13 +179,13 @@ from periods (the so-called \emph{constrained deadline tasks}).
 \begin{verbatim}
   \begin{RTGrid}{2}{20}
     \multido{\n=0+4}{5}{        % 4 instances of period 4 
-      \TaskArrDead{1}{\n}{4}    % draw the arrival and deadline
-      \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
+      \TaskArrDead{1}{\n}{4}    % draws the arrival and deadline
+      \TaskExecDelta{1}{\n}{1}  % draws execution (highest priority), 
                                 % from \n to \n+1
     }
  
     \multido{\n=0+6}{3}{        % 3 instances of period 6 
-      \TaskArrDead{2}{\n}{6}    % draw the arrival and deadline
+      \TaskArrDead{2}{\n}{6}    % draws the arrival and deadline
     }
     % no simple formula for lowest priority, sorry!
     \TaskExecution{2}{1}{4}
@@ -204,24 +198,24 @@ from periods (the so-called \emph{constrained deadline tasks}).
   \label{fig:ex1a}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   \begin{RTGrid}{3}{14}
     \multido{\n=0+3}{4}{        % 4 instances of period 3, starting from 0 
-      \TaskArrival{1}{\n}       % draw only the arrival
-      \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
+      \TaskArrival{1}{\n}       % draws only the arrival
+      \TaskExecDelta{1}{\n}{1}  % draws execution (highest priority), 
                                 % from \n to \n+1
     }
  
     \multido{\n=3+4}{3}{        % 3 instances of period 4, starting from 3 
-      \TaskArrival{2}{\n}       % draw only the arrival
+      \TaskArrival{2}{\n}       % draws only the arrival
     }
     \TaskExecDelta{2}{4}{1}
     \TaskExecDelta{2}{7}{1}
     \TaskExecDelta{2}{11}{1}
 
     \multido{\n=1+5}{3}{        % 3 instances of period 5, starting from 1 
-      \TaskArrival{3}{\n}       % draw only the arrival
+      \TaskArrival{3}{\n}       % draws only the arrival
     }
     \TaskExecDelta{3}{1}{1}
     \TaskExecDelta{3}{8}{1}
@@ -231,19 +225,19 @@ from periods (the so-called \emph{constrained deadline tasks}).
 \begin{verbatim}
   \begin{RTGrid}{3}{14}
     \multido{\n=0+3}{4}{        % 4 instances of period 3 
-      \TaskArrival{1}{\n}       % draw only the arrival
-      \TaskExecDelta{1}{\n}{1}} % draw execution (highest priority), 
+      \TaskArrival{1}{\n}       % draws only the arrival
+      \TaskExecDelta{1}{\n}{1}} % draws execution (highest priority), 
                                 % from \n to \n+1
  
     \multido{\n=3+4}{3}{        % 3 instances of period 4, starting from 3 
-      \TaskArrival{2}{\n}}      % draw only the arrival
+      \TaskArrival{2}{\n}}      % draws only the arrival
 
     \TaskExecDelta{2}{4}{1}
     \TaskExecDelta{2}{7}{1}
     \TaskExecDelta{2}{11}{1}
 
     \multido{\n=1+5}{3}{        % 3 instances of period 5, starting from 1 
-      \TaskArrival{3}{\n}}      % draw only the arrival
+      \TaskArrival{3}{\n}}      % draws only the arrival
 
     \TaskExecDelta{3}{1}{1}
     \TaskExecDelta{3}{8}{1}
@@ -254,7 +248,7 @@ from periods (the so-called \emph{constrained deadline tasks}).
   \label{fig:ex1b}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   \begin{RTGrid}[width=8cm]{2}{15}
     \multido{\n=0+6}{3}{
@@ -280,13 +274,13 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
   \centering
   \begin{RTGrid}{2}{20}
     \multido{\n=0+4}{5}{        % 5 instances of period 4 
-      \TaskArrDead{1}{\n}{4}    % draw the arrival and deadline
-      \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
+      \TaskArrDead{1}{\n}{4}    % draws the arrival and deadline
+      \TaskExecDelta{1}{\n}{1}  % draws execution (highest priority), 
                                 % from \n to \n+1
     }
  
     \multido{\n=0+6}{3}{        % 3 instances of period 6 
-      \TaskArrDead{2}{\n}{6}    % draw the arrival and deadline
+      \TaskArrDead{2}{\n}{6}    % draws the arrival and deadline
     }
 
     \TaskRespTime{2}{0}{4}
@@ -305,11 +299,11 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
     \multido{\n=0+6}{3}{        
       \TaskArrDead{2}{\n}{6}}
 
-    \TaskRespTime{2}{0}{4}   % draws the hatched rectangle in [0,4]
-    \TaskExecution{2}{1}{4}  % draws execution (over the previous rectangle)
-    \TaskRespTime{2}{6}{4}   % draws the hatched rectangle in [6,10]
-    \TaskExecution{2}{6}{8}  % draws execution
-    \TaskExecution{2}{9}{10} % draws execution
+    \TaskRespTime{2}{0}{4}    % draws the hatched rectangle in [0,4]
+    \TaskExecution{2}{1}{4}   % draws execution (over the previous rectangle)
+    \TaskRespTime{2}{6}{4}    % draws the hatched rectangle in [6,10]
+    \TaskExecution{2}{6}{8}   % draws execution
+    \TaskExecution{2}{9}{10}  % draws execution
     \TaskRespTime{2}{12}{4}   % draws the hatched rectangle in [12,16]
     \TaskExecution{2}{13}{16} % draws execution   
   \end{RTGrid}  
@@ -322,10 +316,10 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
 \subsection{Controlling visualization}
 
 It is possible to specify many options in the \texttt{RTGrid}
-environment.  Maybe you don't like the grid: then, you can decide to
+environment. Maybe you don't like the grid: then, you can decide to
 not visualise it as in Figure \ref{fig:ex2}, where we also removed the
 task symbols.
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   %% no grid and no symbols
   \begin{RTGrid}[nogrid=1,nosymbols=1]{2}{20}
@@ -361,16 +355,17 @@ The next figure \ref{fig:ex2a} uses different task symbols, does not
 show the numbers on the time line, and the color of the boxes that
 denote the execution of the second instance of the second task are
 changed to red. Also, I am changing the width, so the figure looks
-smaller.
+smaller. Notice that you can directly specify colors using the TikZ
+ way (color!percentage for example).
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   %% specify 1) no numbers on the time line, 2) a different symbol, 3)
-  %% a different size of the symbol (default is 8pt).
+  %% a different size of the symbol using latex size commands (default is \normalsize).
   %% Notice that you should not use the math mode in the
   %% specification of the symbol, as the symbol is already used in a
   %% math environment inside the macro
-  \begin{RTGrid}[width=8cm,symbol=\gamma,nonumbers=1,labelsize=11pt]{2}{20}
+  \begin{RTGrid}[width=8cm,symbol=\gamma,nonumbers=1,labelsize=\small]{2}{20}
     \multido{\n=0+4}{5}{         
       \TaskArrDead{1}{\n}{4}    
       \TaskExecDelta{1}{\n}{1}}
@@ -381,17 +376,17 @@ smaller.
     \TaskExecution[linecolor=cyan,color=white]{2}{1}{4}
     %% the next two boxes are filled with red instead of gray
     \TaskExecution[color=red]{2}{6}{8}
-    \TaskExecution[color=red]{2}{9}{10}
+    \TaskExecution[color=red!50]{2}{9}{10}
     \TaskExecution{2}{13}{16}        
   \end{RTGrid}
 
 \begin{verbatim}
   %% specify 1) no numbers on the time line, 2) a different symbol, 3)
-  %% a different size of the symbol (default is 8pt).
+  %% a different size of the symbol (default is \normalsize).
   %% Notice that you should not use the math mode in the
   %% specification of the symbol, as the symbol is already used in a
   %% math environment inside the macro
-  \begin{RTGrid}[symbol=\gamma,nonumbers=1,labelsize=11pt]{2}{20}
+  \begin{RTGrid}[symbol=\gamma,nonumbers=1,labelsize=\Large]{2}{20}
     \multido{\n=0+4}{5}{         
       \TaskArrDead{1}{\n}{4}    
       \TaskExecDelta{1}{\n}{1}}
@@ -406,7 +401,7 @@ smaller.
     \TaskExecution{2}{13}{16}        
   \end{RTGrid}
 \end{verbatim}
-  \caption{Different symbols (with size 11pt), no numbers, a different
+  \caption{Different symbols (with \textbackslash Large size), no numbers, a different
     task color}
   \label{fig:ex2a}
 \end{figure}
@@ -420,7 +415,7 @@ which writes the \texttt{label} at the specified row (index 1 stays at
 the top). Here we show also how to specify an arbitrary starting
 number in the time line, using the \texttt{numoffset=12} option.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   %% specify 1) no numbers on the time line, 2) number starting from
   %% 12
@@ -466,7 +461,7 @@ number in the time line, using the \texttt{numoffset=12} option.
 % In the last example (Figure \ref{fig:ex2c}), we show an empty grid in
 % which we specify width and height.
 
-% \begin{figure}[h]
+% \begin{figure}[!htbp]
 %   \centering
 %   %% 3 tasks, 10 units of time
 %   \begin{RTGrid}[width=12cm, height=4cm]{3}{10}
@@ -506,7 +501,7 @@ to highlight a portion of the schedule with \texttt{RTBox}:
 \RTBox{t1}{t2}
 \end{verbatim}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   \begin{RTGrid}{2}{20}
     \RTBox{12}{16}
@@ -535,8 +530,9 @@ to highlight a portion of the schedule with \texttt{RTBox}:
 \end{figure}
 
 Notice that the order with which the objects are drawn is exactly the
-same as the order in which they are specified in the code. For
-example, in Figure \ref{fig:ex3a}, the executions of all the tasks are
+same as the order in which they are specified in the code, excepted 
+for horizontal axes, arrivals and deadlines that are always drawn on the foreground.
+ For example, in Figure \ref{fig:ex3a}, the executions of all the tasks are
 drawn on top of the box. You can try to move the \texttt{RTBox}
 command at the end to see what happens.
 

@@ -3,14 +3,14 @@
 =========================================
 
 Author:  Giuseppe Lipari (g.lipari@sssup.it)
-Version: 1.1
-Date:    2013/01/11
+Version: 2.0
+Date:    2015/05/01
 
 This package contains the rtsched package for drawing GANTT charts
 (chronograms). The package can be useful for drawing real-time timing
 diagrams in LaTeX, as often needs to be done for preparing articles,
 lectures and presentation in the Real-Time Scheduling research
-community. The package depends on keyval, multido and pstricks.
+community. The package depends on keyval and TikZ/PGF.
 
 A more complete documentation, with a set of examples, is available in
 file rtsched-doc.pdf.
