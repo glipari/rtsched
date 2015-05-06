@@ -1,6 +1,6 @@
   %% rtsched.sty
-  %% Copyright 2005 M. G. Lipari
-  %
+  %% Copyright 2005 Giuseppe Lipari
+  %% Copyright 2015 Antoine Bertout <bertout.antoine@gmail.com> Transition from PSTricks to TikZ/PGF.
   % This work may be distributed and/or modified under the
   % conditions of the LaTeX Project Public License, either version 1.3
   % of this license or (at your option) any later version.
@@ -11,16 +11,17 @@
   %
   % This work has the LPPL maintenance status `maintained'.
   % 
-  % The Current Maintainer of this work is G. Lipari
+  % The Current Maintainer of this work is Giuseppe Lipari
   %
-  % This work consists of the file pig.sty.
+  % This work consists of the file rtsched.sty.
   
   
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesPackage{rtsched}[2005/01/01]
+\ProvidesPackage{rtsched}[2015/05/01]
 \typeout{'rtsched' style for Latex and TikZ/PGF}
 \typeout{Easily draw real-time schedules in TeX/Latex.}
 \typeout{(c) 2005, Giuseppe Lipari, Pisa, Italy (g.lipari@sssup.it)}
+\typeout{(c) 2015, Antoine Bertout (bertout.antoine@gmail.com)}
 \typeout{Version 2.0}
 
 \RequirePackage{tikz}
@@ -51,7 +52,7 @@
 \def\RTDefLineWidth{1pt}
 \def\RTDefLineStyle{solid}
 \def\RTDefExecHeight{1}
-\def\RTArrowStyle{-stealth} %arrow style for deadlines, arrivals and horizontal axes
+\def\RTArrowStyle{stealth} %arrow style for deadlines, arrivals and horizontal axes
 % -{Triangle 45}[length=x] with length is a more modern arrow style but requires arrows.meta tikz library (available on latest texlive but rarely up to date on linux distribution)
 %-stealth is a predefined more classical arrow style
 
@@ -184,7 +185,7 @@
     \if\RTAxisInvisible\RTDefAxisInvisible
       \begin{pgfonlayer}{foreground} 
       \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
-      \draw [very thick,\RTArrowStyle] (\sx,\j-3*\sy) -- (\RTWindowLength - \sx,\j-3*\sy);
+      \draw [very thick,-\RTArrowStyle] (\sx,\j-3*\sy) -- (\RTWindowLength - \sx,\j-3*\sy);
       }
       \end{pgfonlayer} 
     \fi 
@@ -251,8 +252,7 @@
     \@compute@yy{#2}
     \@compute@xx{0}
     \xxx = \RTWindowLength \advance \xxx by -\sx 
-    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
-    \psline[linecolor=\RTLineColor]{->}(\xx,\yy)(\xxx,\yy)%
+    \draw [\RTLineColor,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
     \@RTExecDefaultValues%
 }
 
@@ -261,10 +261,10 @@
     \@compute@yy{#2}
     \@compute@xx{0}
     \xxx = \RTWindowLength \advance \xxx by -\sx 
-    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xxx,\yy);
+    \draw [\RTLineColor,-\RTArrowStyle] (\xx,\yy) -- (\xxx,\yy);
     \yyy = 3\sy \multiply \yyy by #3 \advance \yyy by \yy
     \advance \yyy by -\sy
-    \draw [\RTLineColor,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+    \draw [\RTLineColor,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
     \@RTExecDefaultValues%
 }
 
@@ -287,7 +287,7 @@
     \@compute@xx{#3}
     \yyy = \yy \advance \yyy by 2\sy%
      \begin{pgfonlayer}{foreground} 
-    \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+    \draw [\RTLineColor, thick,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
      \end{pgfonlayer}
 
     \@RTExecDefaultValues%
@@ -303,11 +303,11 @@
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by 2\sy
   \begin{pgfonlayer}{foreground} 
-  \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+  \draw [\RTLineColor, thick,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
   \end{pgfonlayer}
   \advance \xx by #4\sx
   \begin{pgfonlayer}{foreground} 
-  \draw [\RTLineColor, thick,\RTArrowStyle] (\xx,\yyy) -- (\xx,\yy);
+  \draw [\RTLineColor, thick, -\RTArrowStyle] (\xx,\yyy) -- (\xx,\yy);
   \end{pgfonlayer}
   \@RTExecDefaultValues
 }
@@ -322,7 +322,7 @@
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by 2\sy
   \begin{pgfonlayer}{foreground} 
-  \draw [\RTLineColor, thick,<-] (\xx,\yy) -- (\xx,\yyy);
+  \draw [\RTLineColor, thick, \RTArrowStyle-] (\xx,\yy) -- (\xx,\yyy);
   \end{pgfonlayer}
   \@RTExecDefaultValues
 }
@@ -333,9 +333,10 @@
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \RTExecHeight\sy
   \@compute@xxx{#4}
- \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
+  \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
   \advance \xx by \xxx \xx = .5\xx
- \draw (\xx,\yy) node[above, font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
+  \advance \yy by .5\RTExecHeight\sy
+  \draw (\xx,\yy) node[font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
   \@RTExecDefaultValues
 }
 %
@@ -349,7 +350,8 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \sy
-   \node[above,font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize L(#4)}; %\RTNumberLabelSize
+  \advance \yyy by .5\sy
+  \node[font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize L(#4)}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
 %
@@ -363,7 +365,8 @@
   \@compute@yy{#2}
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \sy
-   \node[above, font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize U(#4)}; %\RTNumberLabelSize
+  \advance \yyy by .5\sy
+  \node[font=\rtfont] at (\xx , \yyy) {\RTNumberLabelSize U(#4)}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
 %
@@ -396,7 +399,7 @@
   \yyy = -3\sy \multiply \yyy by #3 \advance \yyy by \sy
   \advance \yyy by \hy \advance \yyy by -\sy % \RTWindowHeight
   \begin{pgfonlayer}{foreground} 
-  \draw [dashed, thick,\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
+  \draw [dashed, thick,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
   \end{pgfonlayer}
   \@RTExecDefaultValues
 }
@@ -416,7 +419,7 @@
   \advance \yyy by \hy %\advance \yyy by -\sy %\RTWindowHeight
   \xxx = #5\sx \advance \xxx by \sx
    \begin{pgfonlayer}{foreground} 
-  \draw [dashed, thick,\RTArrowStyle] (\xx,\yy) -- (\xxx,\yyy);
+  \draw [dashed, thick,-\RTArrowStyle] (\xx,\yy) -- (\xxx,\yyy);
    \end{pgfonlayer}
 
 }
@@ -465,7 +468,7 @@
 \newcommand{\RowLabel}[3][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
-  \advance \yy by 1.5\sy
+  \advance \yy by 2\sy
   \xx = \RTRowLabelOffset %\advance \xx by \sx
   \node[below left,font=\rtfont] at (-\xx , \yy) {\RTTaskLabelSize #3};%\RTTaskLabelSize
 }
@@ -505,7 +508,6 @@
   \draw [pattern color=\RTTaskColor,draw=\RTLineColor, pattern=crosshatch, thin] (\xx,\yy) rectangle (\xxx,\yyy);
   \@RTExecDefaultValues
 }
-
 
 \@ifclassloaded{beamer}{
   \renewcommand<>{\TaskArrival}[3][nocommand=1]{
