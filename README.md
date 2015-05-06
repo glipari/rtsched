@@ -2,7 +2,8 @@
  rtsched: The Real-Time scheduling style
 =========================================
 
-Author:  Giuseppe Lipari (g.lipari@sssup.it)
+Author: Giuseppe Lipari (g.lipari@sssup.it)
+	Antoine Bertout (bertout.antoine@gmail.com)
 Version: 2.0
 Date:    2015/05/01
 
