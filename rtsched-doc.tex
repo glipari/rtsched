@@ -82,7 +82,7 @@ Figure \ref{fig:ex1a}. Available periodic versions of the commands can be found 
 \begin{table}[!htbp]
 \begin{tabular}{|l|l|}
  \hline
-  Atomic version & Periodic version  \\
+  Command & Periodic version  \\
  \hline
  \verb+\TaskArrival{i}{t}+ & \verb+\TaskNArrival{i}{t}{p}{n}+ \\
  \verb+\TaskDeadline{i}{t}+ & \verb+\TaskNDeadline{i}{t}{p}{n}+ \\
@@ -312,7 +312,7 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
   \begin{RTGrid}{2}{20}
   
     \TaskNArrDead{1}{0}{4}{4}{5}    % draws the arrivals and deadlines
-    \TasNkExecDelta{1}{0}{1}{4}{5}  % draws executions (highest priority) 
+    \TaskNExecDelta{1}{0}{1}{4}{5}  % draws executions (highest priority) 
                                     % for 5 instances of period 4 
 
  
