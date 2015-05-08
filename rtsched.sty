@@ -112,7 +112,6 @@
 \newcount\nhl % number of horizontal lines
 \newcount\nvl % number of vertical lines
 \newcount\ntasks % number of tasks
-\newcount\ntaskslessone %number of tasks less one
 \newcount\tmp % temp
 
 
@@ -124,8 +123,6 @@
 \def\@mygrid@begin[#1]#2#3{\setkeys{RT}{#1}%
   %% get the number of tasks
   \ntasks = #2
-  \ntaskslessone = \ntasks
-  \advance \ntaskslessone by -1
   %% number of horizontal steps in the grid
   \nsx = #3 \advance \nsx by 2 %
   %% real length of the window (approx)
@@ -174,7 +171,7 @@
 
     %% Task Names
     \if\RTWriteSymbols\RTDefWriteSymbols
-     \foreach \i  [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+     \foreach \i  [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\numexpr \ntasks - 1}{
       \pgfmathsetmacro\task{\i + 1};
       \node[below, font=\rtfont] at (-\sx , \j-\sy) {\RTTaskLabelSize $\RTTaskSymbol_{\pgfmathprintnumber[int trunc]{\task}}$};
      }
@@ -184,7 +181,7 @@
     %% Horizontal axes
     \if\RTAxisInvisible\RTDefAxisInvisible
       \begin{pgfonlayer}{foreground} 
-      \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+      \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\numexpr \ntasks - 1}{
       \draw [very thick,-\RTArrowStyle] (\sx,\j-3*\sy) -- (\RTWindowLength - \sx,\j-3*\sy);
       }
       \end{pgfonlayer} 
@@ -278,9 +275,11 @@
     \@RTExecDefaultValues%
 }
 
-%% Task Arrival: draws an up arrow at the specified slot
-%% #1  : task number from 1 to n
-%% #2  : slot number from 0 to l-1
+%
+% TaskArrival
+% Task arrival: draws an up arrow at the specified slot
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
 \newcommand{\TaskArrival}[3][nocommand=1]{%
     \setkeys{RT}{#1}%
     \@compute@yy{#2}
@@ -289,14 +288,28 @@
      \begin{pgfonlayer}{foreground} 
     \draw [\RTLineColor, thick,-\RTArrowStyle] (\xx,\yy) -- (\xx,\yyy);
      \end{pgfonlayer}
-
     \@RTExecDefaultValues%
 }
 
-%% Task Arrival and deadline: draws an up arrow and a down arrow at the specified slots
-%% #1  : task number from 1 to n
-%% #2  : slot number from 0 to l-1
-%% #3  : relative deadline
+%
+% TaskNArrival
+% Task arrivals: draws periodically up arrows from the specified slot
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
+% par 3  : period
+% par 4  : number of instances
+\newcommand{\TaskNArrival}[5][nocommand=1]{%
+ \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #4)] in {0,...,\numexpr #5-1}{
+ \TaskArrival[#1]{#2}{\activation}{#4}
+ }
+}
+
+%
+% TaskArrDead
+% Task arrival and deadline: draws an up arrow and a down arrow at the specified slots
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
+% par 3  : relative deadline
 \newcommand{\TaskArrDead}[4][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
@@ -312,10 +325,26 @@
   \@RTExecDefaultValues
 }
 
+%
+% TaskNArrDead
+% Task arrivals and deadlines: draws periodically up arrows and down arrows from the specified slots
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
+% par 3  : relative deadline
+% par 4  : period
+% par 5  : number of instances
 
-%% Task Deadline: draws a down arrow at the specified slot
-%% #1  : task number from 1 to n
-%% #2  : slot number from 0 to l-1
+\newcommand{\TaskNArrDead}[6][nocommand=1]{
+ \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #5)] in {0,...,\numexpr #6-1}{
+ \TaskArrDead[#1]{#2}{\activation}{#4}
+ }
+}
+
+%
+% TaskDeadline
+% Task deadline: draws a down arrow at the specified slot
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
 \newcommand{\TaskDeadline}[3][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
@@ -327,6 +356,25 @@
   \@RTExecDefaultValues
 }
 
+%
+% TaskNDeadline
+% periodic task deadlines: draws periodically down arrows from the specified slot 
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
+% par 3  : period
+% par 4  : number of instances
+\newcommand{\TaskNDeadline}[5][nocommand=1]{%
+ \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #4)] in {0,...,\numexpr #5-1}{
+ \TaskDeadline[#1]{#2}{\activation}{#4}
+ }
+}
+
+%
+% TaskExecution
+% Task execution: draws an execution from start time to finish time
+% par 1:  task
+% par 2:  start time
+% par 3:  finish time
 \newcommand{\TaskExecution}[4][nocommand=1]{
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
@@ -475,6 +523,7 @@
 
 % 
 % TaskExecDelta
+% Task execution delta: draws an execution from start time during delta time
 % par 1:  task
 % par 2:  start time
 % par 3:  delta
@@ -491,6 +540,22 @@
    \draw (\xx,\yy) node[above, font=\rtfont] {\RTTaskLabelSize \RTExecLabel}; %\RTNumberLabelSize
   \@RTExecDefaultValues
 }
+
+% 
+% TaskNExecDelta
+% Task execution deltas: draws periodically executions from start time during delta time
+% par 1:  task
+% par 2:  start time
+% par 3:  delta
+% par 4:  period
+% par 5:  number of instances
+
+\newcommand{\TaskNExecDelta}[6][nocommand=1]{
+  \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #5)] in {0,...,\numexpr #6-1}{
+    \TaskExecDelta[#1]{#2}{\activation}{#4}
+  }
+}
+
 
 
 % 
@@ -513,17 +578,29 @@
   \renewcommand<>{\TaskArrival}[3][nocommand=1]{
     \only#4{\beameroriginal{\TaskArrival}[#1]{#2}{#3}}
   }
+  \renewcommand<>{\TaskNArrival}[5][nocommand=1]{
+    \only#6{\beameroriginal{\TaskNArrival}[#1]{#2}{#3}{#4}{#5}}
+  }
   \renewcommand<>{\TaskArrDead}[4][nocommand=1]{
     \only#5{\beameroriginal{\TaskArrDead}[#1]{#2}{#3}{#4}}
   }
+ \renewcommand<>{\TaskNArrDead}[6][nocommand=1]{
+    \only#7{\beameroriginal{\TaskNArrDead}[#1]{#2}{#3}{#4}{#5}{#6}}
+  }
   \renewcommand<>{\TaskDeadline}[3][nocommand=1]{
     \only#4{\beameroriginal{\TaskDeadline}[#1]{#2}{#3}}
+  }
+  \renewcommand<>{\TaskNDeadline}[5][nocommand=1]{
+    \only#6{\beameroriginal{\TaskNDeadline}[#1]{#2}{#3}{#4}{#5}}
   }
   \renewcommand<>{\TaskExecution}[4][nocommand=1]{
     \only#5{\beameroriginal{\TaskExecution}[#1]{#2}{#3}{#4}}
   }
   \renewcommand<>{\TaskExecDelta}[4][nocommand=1]{
     \only#5{\beameroriginal{\TaskExecDelta}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskNExecDelta}[6][nocommand=1]{
+    \only#7{\beameroriginal{\TaskNExecDelta}[#1]{#2}{#3}{#4}{#5}{#6}}
   }
   \renewcommand<>{\TaskRespTime}[4][nocommand=1]{
     \only#5{\beameroriginal{\TaskRespTime}[#1]{#2}{#3}{#4}}
@@ -553,4 +630,5 @@
 {\typeout{beamer not loaded}}
 
 \endinput
+
 

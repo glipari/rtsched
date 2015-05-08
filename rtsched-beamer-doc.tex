@@ -76,15 +76,15 @@
       }
       \RTBox<23>{6}{10}
 
-      \multido{\n=0+4}{5}{        % 5 instances of period 4 
-        \TaskArrDead{1}{\n}{4}    % draw the arrival and deadline
-        \TaskExecDelta{1}{\n}{1}  % draw execution (highest priority), 
-        % from \n to \n+1
-      }
+           
+      \TaskArrDead{1}{0}{4}{4}{5}    % draws the arrivals and deadlines
+      \TaskExecDelta{1}{0}{1}{4}{5}  % draws execution (highest priority)
+                                     % for 5 instances of period 4 
+     
+            
+      \TaskArrDead{2}{0}{6}{6}{3}    % draws the arrivals and deadlines
+                                     % for 3 instances of period 6 
       
-      \multido{\n=0+6}{3}{        % 3 instances of period 6 
-        \TaskArrDead{2}{\n}{6}    % draw the arrival and deadline
-      }
       % no simple formula for lowest priority, sorry!
       \TaskExecution{2}{1}{4}
       \TaskExecution{2}{6}{8}
