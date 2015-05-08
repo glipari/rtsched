@@ -112,7 +112,6 @@
 \newcount\nhl % number of horizontal lines
 \newcount\nvl % number of vertical lines
 \newcount\ntasks % number of tasks
-\newcount\ntaskslessone %number of tasks less one
 \newcount\tmp % temp
 
 
@@ -124,8 +123,6 @@
 \def\@mygrid@begin[#1]#2#3{\setkeys{RT}{#1}%
   %% get the number of tasks
   \ntasks = #2
-  \ntaskslessone = \ntasks
-  \advance \ntaskslessone by -1
   %% number of horizontal steps in the grid
   \nsx = #3 \advance \nsx by 2 %
   %% real length of the window (approx)
@@ -174,7 +171,7 @@
 
     %% Task Names
     \if\RTWriteSymbols\RTDefWriteSymbols
-     \foreach \i  [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+     \foreach \i  [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\numexpr \ntasks - 1}{
       \pgfmathsetmacro\task{\i + 1};
       \node[below, font=\rtfont] at (-\sx , \j-\sy) {\RTTaskLabelSize $\RTTaskSymbol_{\pgfmathprintnumber[int trunc]{\task}}$};
      }
@@ -184,7 +181,7 @@
     %% Horizontal axes
     \if\RTAxisInvisible\RTDefAxisInvisible
       \begin{pgfonlayer}{foreground} 
-      \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\ntaskslessone}{
+      \foreach \i [evaluate = \i as \j using (\hy -3*\i*\sy)] in {0,...,\numexpr \ntasks - 1}{
       \draw [very thick,-\RTArrowStyle] (\sx,\j-3*\sy) -- (\RTWindowLength - \sx,\j-3*\sy);
       }
       \end{pgfonlayer} 
@@ -303,7 +300,7 @@
 % par 4  : number of instances
 \newcommand{\TaskNArrival}[5][nocommand=1]{%
  \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #4)] in {0,...,\numexpr #5-1}{
- \TaskArrival{#2}{\activation}{#4}
+ \TaskArrival[#1]{#2}{\activation}{#4}
  }
 }
 
@@ -339,7 +336,7 @@
 
 \newcommand{\TaskNArrDead}[6][nocommand=1]{
  \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #5)] in {0,...,\numexpr #6-1}{
- \TaskArrDead{#2}{\activation}{#4}
+ \TaskArrDead[#1]{#2}{\activation}{#4}
  }
 }
 
@@ -368,7 +365,7 @@
 % par 4  : number of instances
 \newcommand{\TaskNDeadline}[5][nocommand=1]{%
  \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #4)] in {0,...,\numexpr #5-1}{
- \TaskDeadline{#2}{\activation}{#4}
+ \TaskDeadline[#1]{#2}{\activation}{#4}
  }
 }
 
@@ -554,9 +551,9 @@
 % par 5:  number of instances
 
 \newcommand{\TaskNExecDelta}[6][nocommand=1]{
- \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #5)] in {0,...,\numexpr #6-1}{
- \TaskExecDelta{#2}{\activation}{#4}
- }
+  \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #5)] in {0,...,\numexpr #6-1}{
+    \TaskExecDelta[#1]{#2}{\activation}{#4}
+  }
 }
 
 
