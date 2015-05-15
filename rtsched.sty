@@ -489,7 +489,28 @@
 }
 
 
+%
+% TaskMargin
+% par 1: task
+% par 2: start time
+% par 3: finish time
+\newcommand{\TaskMargin}[4][nocommand=1]{
+\setkeys{RT}{#1}
+\@compute@yy{#2}
+\@compute@xx{#3}
+\@compute@xxx{#4}
+\advance \yy by .5\sy
+\draw [\RTLineColor, thick, \RTArrowStyle-\RTArrowStyle] (\xx,\yy) -- (\xxx,\yy);
+\advance \xx by \xxx \xx = .5\xx
+%\advance \yy by .5\RTExecHeight\sy
+\draw (\xx,\yy) node[above,font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
+\@RTExecDefaultValues
 
+ % \advance \xx by \xxx \xx = .5\xx
+  %\advance \yy by .5\RTExecHeight\sy
+  %\draw (\xx,\yy) node[font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
+
+}
 %% %
 % % par 1: task
 % % par 2: first instant (arrival)
@@ -626,6 +647,9 @@
   \renewcommand<>{\FLine}[5][nocommand=1]{
     \only#6{\beameroriginal{\FLine}[#1]{#2}{#3}{#4}{#5}}
   }  
+  \renewcommand<>{\TaskMargin}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskMargin}[#1]{#2}{#3}{#4}}
+  }
 }
 {\typeout{beamer not loaded}}
 
