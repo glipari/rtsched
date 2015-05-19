@@ -490,11 +490,13 @@
 
 
 %
-% TaskMargin
+% TaskInterval : specify an interval with an horizontal double arrow
 % par 1: task
 % par 2: start time
 % par 3: finish time
-\newcommand{\TaskMargin}[4][nocommand=1]{
+% par 4: label
+
+\newcommand{\TaskInterval}[5][nocommand=1]{
 \setkeys{RT}{#1}
 \@compute@yy{#2}
 \@compute@xx{#3}
@@ -503,12 +505,9 @@
 \draw [\RTLineColor, thick, \RTArrowStyle-\RTArrowStyle] (\xx,\yy) -- (\xxx,\yy);
 \advance \xx by \xxx \xx = .5\xx
 %\advance \yy by .5\RTExecHeight\sy
-\draw (\xx,\yy) node[above,font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
-\@RTExecDefaultValues
+\draw (\xx,\yy) node[above,font=\rtfont] {\RTTaskLabelSize #5};%
 
- % \advance \xx by \xxx \xx = .5\xx
-  %\advance \yy by .5\RTExecHeight\sy
-  %\draw (\xx,\yy) node[font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
+\@RTExecDefaultValues
 
 }
 %% %
@@ -647,8 +646,8 @@
   \renewcommand<>{\FLine}[5][nocommand=1]{
     \only#6{\beameroriginal{\FLine}[#1]{#2}{#3}{#4}{#5}}
   }  
-  \renewcommand<>{\TaskMargin}[4][nocommand=1]{
-    \only#5{\beameroriginal{\TaskMargin}[#1]{#2}{#3}{#4}}
+  \renewcommand<>{\TaskInterval}[5][nocommand=1]{
+    \only#6{\beameroriginal{\TaskInterval}[#1]{#2}{#3}{#4}{#5}}
   }
 }
 {\typeout{beamer not loaded}}
