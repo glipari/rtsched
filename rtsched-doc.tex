@@ -18,8 +18,8 @@ In this document, I give an overview of the \texttt{rtsched} \LaTeX
 package, which can be used to easily draw chronograms (GANTT charts).
 These diagrams are quite common in real-time scheduling research.
 
-
-The package depends on keyval and TikZ/PGF (pgf version 2.10 or greater), both widely available on any \TeX distribution.
+The package depends on keyval and TikZ/PGF (pgf version 2.10 or greater), both widely
+available on any \TeX distribution.
 
 The drawing capabilities are completely based on TikZ. Thus, you can compile
  a document that uses \texttt{rtsched} package with modern tools producing pdf document
@@ -346,13 +346,13 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
   \label{fig:resp-time}
 \end{figure}
 
-It is sometimes usefull to represent the end of a job execution, especially when jobs are preempted. In that case, you can use the following command:
+It is sometimes useful to represent the end of a job execution, especially to distinguish it from preemption. In that case, you can use the following command :
 
 \begin{verbatim}
 \TaskEnd{i}{t}
 \end{verbatim}
 
-and its periodic version detailed in Table~\ref{tab:periodic_versions} that draw little circle(s) at the specified date(s). It works in the same way as \verb+\TaskArrival+ command and its us is shown in Figure~\ref{fig:ex1a}.
+and its periodic version detailed in Table~\ref{tab:periodic_versions} that draw little circle(s) at the specified date(s). It works in the same way as \verb+\TaskArrival+ command as shown in Figure~\ref{fig:ex1a}.
 
 
 
@@ -644,7 +644,7 @@ following command:
 \subsection{Jitter}
 
 
-Jitter is often represented as an interval drawned by an horizontal double arrowhead. As shown in the Figure~\ref{fig:interval}, you can define jitter or any other interval with the following command:
+Jitter is often represented as an interval drawn by an horizontal double-headed arrow. As shown in the Figure~\ref{fig:interval}, you can define jitter or any other interval with the following command :
 
 \begin{verbatim}
 \TaskInterval{i}{t1}{t2}{label}
