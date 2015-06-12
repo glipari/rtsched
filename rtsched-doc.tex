@@ -188,7 +188,7 @@ from periods (the so-called \emph{constrained deadline tasks}).
     \TaskNExecDelta{1}{0}{1}{4}{5}  % draws executions (highest priority) 
                                     % for 5 instances of period 4 
                                     
-    \TaskNEnd{1}{1}{4}{5}	       % draws 5 end of job execution of period 4
+    \TaskNEnd{1}{1}{4}{5}	       % draws 5 ends of job execution of period 4
 
 
                                     % draws the arrival and deadline
@@ -211,7 +211,7 @@ from periods (the so-called \emph{constrained deadline tasks}).
     \TaskNExecDelta{1}{0}{1}{4}{5}  % draws executions (highest priority) 
                                     % for 5 instances of period 4 
                                     
-    \TaskNEnd{1}{1}{4}{5}           % draws 5 end of job execution of period 4
+    \TaskNEnd{1}{1}{4}{5}           % draws 5 ends of job execution of period 4
 
    	\TaskNArrDead{2}{0}{6}{6}{3}    % draws the arrival and deadline
                                     % for 3 instances of period 6 
@@ -346,7 +346,13 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
   \label{fig:resp-time}
 \end{figure}
 
-It is sometimes usefull to represent the end of a job execution, especially when jobs are preempted. In that case, you can use the \verb+\TaskEnd{i}{t}+ command and its periodic version detailed in Table~\ref{tab:periodic_versions} that draw little circle(s) at the specified date(s). It works in the same way as \verb+\TaskArrival+ command and it is used in Figure~\ref{fig:ex1a}.
+It is sometimes usefull to represent the end of a job execution, especially when jobs are preempted. In that case, you can use the following command:
+
+\begin{verbatim}
+\TaskEnd{i}{t}
+\end{verbatim}
+
+and its periodic version detailed in Table~\ref{tab:periodic_versions} that draw little circle(s) at the specified date(s). It works in the same way as \verb+\TaskArrival+ command and its us is shown in Figure~\ref{fig:ex1a}.
 
 
 
@@ -633,6 +639,65 @@ following command:
   \caption{Priority Inheritance example}
   \label{fig:ex4}
 \end{figure}
+
+
+\subsection{Jitter}
+
+
+Jitter is often represented as an interval drawned by an horizontal double arrowhead. As shown in the Figure~\ref{fig:interval}, you can define jitter or any other interval with the following command:
+
+\begin{verbatim}
+\TaskInterval{i}{t1}{t2}{label}
+\end{verbatim}
+
+This command draws an horizontal double arrowhead for the \texttt{i}-th task from \texttt{t1} to \texttt{t2} with the specified \texttt{label} in the middle.
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{RTGrid}[nogrid=1, nosymbols=1 ,nonumbers=1]{3}{20}
+  
+    \RowLabel{1}{$\tau_i$}
+    \TaskArrival{1}{0}            
+    \TaskExecution{1}{1}{4}             
+    \TaskDeadline{1}{7}           
+
+    \RowLabel{2}{msg}
+    \TaskArrival{2}{0}              
+    \TaskExecution{2}{4}{6}             
+    \TaskDeadline{2}{8}            
+    \TaskInterval{2}{0}{4}{$J_m$}  % draws an interval between date 0 and 4 for task 2 with a label J_m 
+
+    \RowLabel{3}{$\tau_j$}
+    \TaskArrival{3}{0}             
+    \TaskExecution{3}{6}{9}             
+    \TaskDeadline{3}{10}          
+    \TaskInterval{3}{0}{6}{$J_j$} % draws an interval between date 0 and 6 for task 3 with a label J_j 
+  \end{RTGrid}  
+\begin{verbatim}
+  \begin{RTGrid}[nogrid=1, nosymbols=1 ,nonumbers=1]{3}{20}
+  
+    \RowLabel{1}{$\tau_i$}
+    \TaskArrival{1}{0}            
+    \TaskExecution{1}{1}{4}             
+    \TaskDeadline{1}{7}           
+
+    \RowLabel{2}{msg}
+    \TaskArrival{2}{0}              
+    \TaskExecution{2}{4}{6}             
+    \TaskDeadline{2}{8}            
+    \TaskInterval{2}{0}{4}{$J_m$}  % draws an interval between date 0 and 4 for task 2 with a label J_m 
+
+    \RowLabel{3}{$\tau_j$}
+    \TaskArrival{3}{0}             
+    \TaskExecution{3}{6}{9}             
+    \TaskDeadline{3}{10}          
+    \TaskInterval{3}{0}{6}{$J_j$} % draws an interval between date 0 and 6 for task 3 with a label J_j 
+  \end{RTGrid}  
+\end{verbatim}
+  \caption{Example with TaskInterval used to represent jitters}
+  \label{fig:interval}
+\end{figure}
+
 
 \end{document}
 %%% Local Variables: 
