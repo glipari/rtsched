@@ -28,7 +28,21 @@
 \usetikzlibrary{shadows, patterns}
 \RequirePackage{keyval}
 \newcommand\rtfont{\usefont{T1}{phv}{m}{n}}
+\@ifpackagelater{pgf}{2008/01/15}
+{
+ %pgf package date is 2008/01/15 or later
+}
+{
+ %pgf package date is older than 2008/01/15
+\PackageError{rtsched}{%
+rtsched requires version 2.10 of pgf or greater\MessageBreak
 
+}{%
+Please update pgf to version 2.10 minimum!\MessageBreak
+\space \space Try typing \space \protect\pgfversion
+\space to print your current version of pgf.
+}
+}
 
 %%
 %% These can be changed at any time
@@ -510,6 +524,37 @@
 \@RTExecDefaultValues
 
 }
+
+% TaskEnd
+% Task end: draws a circle when the job terminates
+% par 1: task number from 1 to n
+% par 2: slot number from 0 to l-1
+\newcommand{\TaskEnd}[3][nocommand=1]{%
+  \setkeys{RT}{#1}%
+  \@compute@yy{#2}
+  \@compute@xx{#3}
+  \yyy = \yy \advance \yyy by 2\sy%
+  \begin{pgfonlayer}{foreground} 
+  \draw[fill] (\xx,\yy) circle (1.5pt);
+  \end{pgfonlayer}
+  \@RTExecDefaultValues%
+}
+
+%
+% TaskNEnd
+% Task ends: draws periodically a circle when the job terminates
+% par 1  : task number from 1 to n
+% par 2  : slot number from 0 to l-1
+% par 3  : period
+% par 4  : number of instances
+\newcommand{\TaskNEnd}[5][nocommand=1]{%
+ \foreach \instance [evaluate = \instance as \activation using (#3 + \instance * #4)] in {0,...,\numexpr #5-1}{
+ \TaskEnd[#1]{#2}{\activation}{#4}
+ }
+}
+
+
+
 %% %
 % % par 1: task
 % % par 2: first instant (arrival)
@@ -648,6 +693,12 @@
   }  
   \renewcommand<>{\TaskInterval}[5][nocommand=1]{
     \only#6{\beameroriginal{\TaskInterval}[#1]{#2}{#3}{#4}{#5}}
+  }
+  \renewcommand<>{\TaskEnd}[3][nocommand=1]{
+    \only#4{\beameroriginal{\TaskEnd}[#1]{#2}{#3}}
+  }
+  \renewcommand<>{\TaskNEnd}[5][nocommand=1]{
+    \only#6{\beameroriginal{\TaskNEnd}[#1]{#2}{#3}{#4}{#5}}
   }
 }
 {\typeout{beamer not loaded}}
