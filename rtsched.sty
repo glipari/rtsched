@@ -66,9 +66,11 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \def\RTDefLineWidth{1pt}
 \def\RTDefLineStyle{solid}
 \def\RTDefExecHeight{1}
-\def\RTArrowStyle{stealth} %arrow style for deadlines, arrivals and horizontal axes
+\def\RTArrowStyle{stealth}
+%arrow style for deadlines, arrivals and horizontal axes
 % -{Triangle 45}[length=x] with length is a more modern arrow style but requires arrows.meta tikz library (available on latest texlive but rarely up to date on linux distribution)
 %-stealth is a predefined more classical arrow style
+\def\RTDefEndInstance{0} 
 
 \def\RTExecLabel{\ }
 \def\RTTaskSymbol{\RTDefTaskSymbol}
@@ -85,9 +87,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \def\RTLineWidth{\RTDefLineWidth}
 \def\RTLineStyle{\RTDefLineStyle}
 \def\RTExecHeight{\RTDefExecHeight}
-
-
-
+\def\RTEndInstance{\RTDefEndInstance}
 
 \define@key{RT}{height}[\RTNullWindowHeight]{\def\RTWindowHeight{#1}}
 \define@key{RT}{width}[10]{\def\RTWindowLength{#1}}
@@ -109,6 +109,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \define@key{RT}{lw}[\RTDefLineWidth]{\def\RTLineWidth{#1}}
 \define@key{RT}{style}[\RTDefLineStyle]{\def\RTLineStyle{#1}}
 \define@key{RT}{exeheight}[\RTDefExecHeight]{\def\RTExecHeight{#1}}
+\define@key{RT}{end}[\RTDefEndInstance]{\def\RTEndInstance{#1}}
 
 
 %%
@@ -121,6 +122,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \newdimen\yy % y position
 \newdimen\xxx % x position
 \newdimen\yyy % y position
+\newdimen\xtmp % x position
 \newcount\nsx % number of horizontal slots
 \newcount\nsy % number of vertical slots
 \newcount\nhl % number of horizontal lines
@@ -213,12 +215,14 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \setkeys{RT}{linecolor}%
   \setkeys{RT}{xscale}%
   \setkeys{RT}{nosymbols}%
+  \setkeys{RT}{end}%
 }
 
 \def\@RTExecDefaultValues{
   \setkeys{RT}{color}%
   \setkeys{RT}{execlabel}%
   \setkeys{RT}{linecolor}%
+  \setkeys{RT}{end}%
 }
 
 \def\RTGridEnd{
@@ -365,7 +369,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by 2\sy
   \begin{pgfonlayer}{foreground} 
-  \draw [\RTLineColor, thick, \RTArrowStyle-] (\xx,\yy) -- (\xx,\yyy);
+  \draw [\RTLineStyle, \RTLineColor, thick, \RTArrowStyle-] (\xx,\yy) -- (\xx,\yyy);
   \end{pgfonlayer}
   \@RTExecDefaultValues
 }
@@ -399,6 +403,14 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \advance \xx by \xxx \xx = .5\xx
   \advance \yy by .5\RTExecHeight\sy
   \draw (\xx,\yy) node[font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
+   \if\RTEndInstance\RTDefEndInstance
+     \relax
+   \else 
+     \begin{pgfonlayer}{foreground} 
+       \draw[\RTLineColor, fill] (\xxx,\yyy) circle (1.5pt);
+     \end{pgfonlayer}
+   \fi
+
   \@RTExecDefaultValues
 }
 %
@@ -526,16 +538,17 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 }
 
 % TaskEnd
-% Task end: draws a circle when the job terminates
+% Task end: draws a circle, typically to indicate job termination
+% (see also the end key in \TaskExecDelta and \TaskExecution)
 % par 1: task number from 1 to n
 % par 2: slot number from 0 to l-1
 \newcommand{\TaskEnd}[3][nocommand=1]{%
   \setkeys{RT}{#1}%
   \@compute@yy{#2}
   \@compute@xx{#3}
-  \yyy = \yy \advance \yyy by 2\sy%
+  \yyy = \yy \advance \yyy by \sy%
   \begin{pgfonlayer}{foreground} 
-  \draw[fill] (\xx,\yy) circle (1.5pt);
+  \draw[\RTLineColor, fill=\RTTaskColor] (\xx,\yyy) circle (1.5pt);
   \end{pgfonlayer}
   \@RTExecDefaultValues%
 }
@@ -603,6 +616,13 @@ Please update pgf to version 2.10 minimum!\MessageBreak
    \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
   \advance \xx by \xxx \xx = .5\xx
    \draw (\xx,\yy) node[above, font=\rtfont] {\RTTaskLabelSize \RTExecLabel}; %\RTNumberLabelSize
+   \if\RTEndInstance\RTDefEndInstance
+     \relax
+   \else 
+     \begin{pgfonlayer}{foreground} 
+       \draw[\RTLineColor, fill] (\xxx,\yyy) circle (1.5pt);
+     \end{pgfonlayer}
+   \fi
   \@RTExecDefaultValues
 }
 
@@ -620,7 +640,6 @@ Please update pgf to version 2.10 minimum!\MessageBreak
     \TaskExecDelta[#1]{#2}{\activation}{#4}
   }
 }
-
 
 
 % 
@@ -663,6 +682,9 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   }
   \renewcommand<>{\TaskExecDelta}[4][nocommand=1]{
     \only#5{\beameroriginal{\TaskExecDelta}[#1]{#2}{#3}{#4}}
+  }
+  \renewcommand<>{\TaskExecDeltaEnd}[4][nocommand=1]{
+    \only#5{\beameroriginal{\TaskExecDeltaEnd}[#1]{#2}{#3}{#4}}
   }
   \renewcommand<>{\TaskNExecDelta}[6][nocommand=1]{
     \only#7{\beameroriginal{\TaskNExecDelta}[#1]{#2}{#3}{#4}{#5}{#6}}

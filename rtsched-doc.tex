@@ -346,15 +346,25 @@ style. An example is in Figure~\ref{fig:resp-time} that uses command
   \label{fig:resp-time}
 \end{figure}
 
-It is sometimes useful to represent the end of a job execution, especially to distinguish it from preemption. In that case, you can use the following command :
+It is sometimes useful to represent the end of a job execution,
+especially to distinguish it from preemption. In that case, you can
+use the following command :
 
 \begin{verbatim}
 \TaskEnd{i}{t}
 \end{verbatim}
 
-and its periodic version detailed in Table~\ref{tab:periodic_versions} that draw little circle(s) at the specified date(s). It works in the same way as \verb+\TaskArrival+ command as shown in Figure~\ref{fig:ex1a}.
+\noindent and its periodic version detailed in
+Table~\ref{tab:periodic_versions} that draw little circle(s) at the
+specified date(s). It works in the same way as \verb+\TaskArrival+
+command as shown in Figure~\ref{fig:ex1a}. 
+Alternatively, you can also add the \texttt{end=1} key to the
+\texttt{TaskExecution} command as follows:
 
-
+\begin{verbatim}
+\TaskExecution[end=1]{1}{10}{12}
+\TaskExecDelta[end=1]{1}{10}{2}.
+\end{verbatim}
 
 
 \subsection{Controlling visualization}
