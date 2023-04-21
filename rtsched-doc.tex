@@ -708,9 +708,33 @@ This command draws an horizontal double-headed arrow for the \texttt{i}-th task 
   \label{fig:interval}
 \end{figure}
 
+\section{Deadline move}
 
+In Figure \ref{fig:deadline-move} is an example of moving a deadline.
+
+\begin{figure}
+  \centering
+  \begin{RTGrid}[nogrid=1, nosymbols=1 ,nonumbers=1]{1}{25}
+    \TaskArrDead{1}{0}{10}
+    \TaskArrDead{1}{10}{10}
+    \DeadlineMove[linecolor=blue]{1}{0}{10}
+    \DeadlineMove{1}{10}{10}
+  \end{RTGrid}
+\begin{verbatim}
+\begin{RTGrid}[nogrid=1, nosymbols=1 ,nonumbers=1]{1}{25}
+  \TaskArrDead{1}{0}{10}
+  \TaskArrDead{1}{10}{10}
+  \DeadlineMove[linecolor=blue]{1}{0}{10}
+  \DeadlineMove{1}{10}{10}
+\end{RTGrid}
+\end{verbatim}
+  \caption{Example of moving a deadline.}
+  \label{fig:deadline-move}
+\end{figure}
 \end{document}
 %%% Local Variables: 
 %%% mode: latex
+%%% TeX-master: t
+%%% TeX-master: t
 %%% TeX-master: t
 %%% End: 
