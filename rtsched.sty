@@ -24,7 +24,7 @@
 \typeout{Version 2.0.1}
 
 \RequirePackage{tikz}
-\usetikzlibrary{shadows, patterns}
+\usetikzlibrary{shadows, patterns,,patterns.meta}
 \RequirePackage{keyval}
 \newcommand\rtfont{\usefont{T1}{phv}{m}{n}}
 \@ifpackagelater{pgf}{2008/01/15}
@@ -55,6 +55,8 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \def\RTDefNumberOffset{0}
 \def\RTDefTaskFill{solid}
 \def\RTDefTaskColor{gray}
+\def\RTDefTaskPattern{}
+\def\RTDefTaskPatternColor{}
 \def\RTDefLineColor{black}
 \def\RTDefXScale{1}
 \def\RTDefWriteSymbols{0}
@@ -72,6 +74,8 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \def\RTDefEndInstance{0} 
 
 \def\RTExecLabel{\ }
+\def\RTTaskPattern{}
+\def\RTTaskPatternColor{}
 \def\RTTaskSymbol{\RTDefTaskSymbol}
 \def\RTTaskFill{\RTDefTaskFill}
 \def\RTTaskColor{\RTDefTaskColor}
@@ -93,6 +97,8 @@ Please update pgf to version 2.10 minimum!\MessageBreak
 \define@key{RT}{labelsize}[\normalsize]{\def\RTTaskLabelSize{#1}}
 \define@key{RT}{numbersize}[\normalsize]{\def\RTNumberLabelSize{#1}}
 \define@key{RT}{color}[\RTDefTaskColor]{\def\RTTaskColor{#1}}
+\define@key{RT}{pattern}[]{\def\RTTaskPattern{#1}}
+\define@key{RT}{pattern color}[]{\def\RTTaskPatternColor{#1}}
 \define@key{RT}{linecolor}[\RTDefLineColor]{\def\RTLineColor{#1}}
 \define@key{RT}{execlabel}[\ ]{\def\RTExecLabel{#1}}
 \define@key{RT}{fillstyle}[\RTDefTaskFill]{\def\RTTaskFill{#1}}
@@ -222,6 +228,8 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \setkeys{RT}{execlabel}%
   \setkeys{RT}{linecolor}%
   \setkeys{RT}{end}%
+  \setkeys{RT}{pattern}%
+  \setkeys{RT}{pattern color}%
 }
 
 \def\RTGridEnd{
@@ -398,8 +406,19 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \@compute@xx{#3}
   \yyy = \yy \advance \yyy by \RTExecHeight\sy
   \@compute@xxx{#4}
-  \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
-  \advance \xx by \xxx \xx = .5\xx
+
+  \ifx\RTTaskPattern\@empty
+    \ifx\RTTaskPatternColor\@empty
+      \def\RTTaskPatternColorOption{}
+    \fi
+  \else
+    \def\RTTaskPatternColorOption{pattern color=\RTTaskPatternColor}
+  \fi
+  \typeout{Valeur de la variable RTTaskPattern : '\RTTaskPattern'}
+
+\edef\RTTaskExecOptions{fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick, pattern={\RTTaskPattern}, \RTTaskPatternColorOption}
+\expandafter\draw\expandafter[\RTTaskExecOptions] (\xx,\yy) rectangle (\xxx,\yyy);
+  \advance \xx by \xxx \xx = .5\xx!!
   \advance \yy by .5\RTExecHeight\sy
   \draw (\xx,\yy) node[font=\rtfont] {\RTNumberLabelSize \RTExecLabel};%\RTNumberLabelSize
    \if\RTEndInstance\RTDefEndInstance
