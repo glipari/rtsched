@@ -422,7 +422,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   
   \ifx\RTTaskPattern\@empty
   \else
-    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern=\RTTaskPattern, \RTTaskPatternColorOption}
+    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern={\RTTaskPattern}, \RTTaskPatternColorOption}
   \fi
 
 \expandafter\draw\expandafter[\RTTaskExecOptions] (\xx,\yy) rectangle (\xxx,\yyy);
@@ -655,7 +655,7 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   
   \ifx\RTTaskPattern\@empty
   \else
-    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern=\RTTaskPattern, \RTTaskPatternColorOption}
+    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern={\RTTaskPattern}, \RTTaskPatternColorOption}
   \fi
 
   \expandafter\draw\expandafter[\RTTaskExecOptions] (\xx,\yy) rectangle (\xxx,\yyy);  
