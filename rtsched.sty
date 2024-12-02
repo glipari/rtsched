@@ -639,16 +639,36 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \yyy = \yy \advance \yyy by \RTExecHeight \sy
   %\@compute@xxx{#4}
   \xxx = \xx \advance \xxx by #4\sx
-   \draw [fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick] (\xx,\yy) rectangle (\xxx,\yyy);
+  
+  \ifx\RTTaskPatternColor\@empty
+    \def\RTTaskPatternColorOption{}
+  \else
+    \def\RTTaskPatternColorOption{pattern color=\RTTaskPatternColor}
+  \fi
+
+  \edef\RTTaskExecOptions{
+    fill=\RTTaskColor,
+    \RTTaskFill,
+    draw=\RTLineColor,
+    thick
+  }
+  
+  \ifx\RTTaskPattern\@empty
+  \else
+    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern=\RTTaskPattern, \RTTaskPatternColorOption}
+  \fi
+
+  \expandafter\draw\expandafter[\RTTaskExecOptions] (\xx,\yy) rectangle (\xxx,\yyy);  
+  
   \advance \xx by \xxx \xx = .5\xx
-   \draw (\xx,\yy) node[above, font=\rtfont] {\RTTaskLabelSize \RTExecLabel}; %\RTNumberLabelSize
-   \if\RTEndInstance\RTDefEndInstance
-     \relax
-   \else 
-     \begin{pgfonlayer}{foreground} 
-       \draw[\RTLineColor, fill] (\xxx,\yyy) circle (1.5pt);
-     \end{pgfonlayer}
-   \fi
+  \draw (\xx,\yy) node[above, font=\rtfont] {\RTTaskLabelSize \RTExecLabel}; %\RTNumberLabelSize
+  \if\RTEndInstance\RTDefEndInstance
+    \relax
+  \else 
+    \begin{pgfonlayer}{foreground} 
+      \draw[\RTLineColor, fill] (\xxx,\yyy) circle (1.5pt);
+    \end{pgfonlayer}
+  \fi
   \@RTExecDefaultValues
 }
 
