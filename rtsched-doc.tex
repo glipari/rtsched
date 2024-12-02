@@ -4,9 +4,9 @@
 \usepackage{url}
 
 
-\title{The \texttt{rtsched} package for \LaTeX \\ (version 2.0)}
+\title{The \texttt{rtsched} package for \LaTeX \\ (version 2.0.1)}
 \author{Giuseppe Lipari}
-
+\date{December 2, 2024}
 \begin{document}
 
 \maketitle
@@ -425,7 +425,9 @@ smaller. Notice that you can directly specify colors using the TikZ
     %% the next two boxes are filled with red instead of gray
     \TaskExecution[color=red]{2}{6}{8}
     \TaskExecution[color=red!50]{2}{9}{10}
-    \TaskExecution{2}{13}{16}        
+    %% the last box is filled with an orange horizontal lines pattern
+    %% from the TikZ patterns library
+    \TaskExecution[pattern={horizontal lines},pattern color=orange]{2}{13}{16}     
   \end{RTGrid}
 
 \begin{verbatim}
@@ -443,7 +445,9 @@ smaller. Notice that you can directly specify colors using the TikZ
     %% the next two boxes are filled with red instead of gray
     \TaskExecution[color=red]{2}{6}{8}
     \TaskExecution[color=red]{2}{9}{10}
-    \TaskExecution{2}{13}{16}        
+    %% the last box is filled with an orange horizontal lines pattern
+    %% from the TikZ patterns library
+    \TaskExecution[pattern={horizontal lines},pattern color=orange]{2}{13}{16}        
   \end{RTGrid}
 \end{verbatim}
   \caption{Different symbols (with \textbackslash Large size), no numbers, a different
@@ -609,7 +613,7 @@ following command:
     \TaskArrDead{3}{0}{20}
     \TaskExecution{3}{0}{2}
     \TaskLock{3}{2}{S}
-    \TaskExecution[color=red,execlabel=S,pattern=dots]{3}{2}{3}
+    \TaskExecution[color=white,execlabel=S]{3}{2}{3}
     \TaskArrDead{1}{3}{9}  
     \TaskExecution{1}{3}{4}
     \TaskLock{1}{4}{S}

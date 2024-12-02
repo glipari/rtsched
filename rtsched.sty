@@ -24,7 +24,7 @@
 \typeout{Version 2.0.1}
 
 \RequirePackage{tikz}
-\usetikzlibrary{shadows, patterns,patterns.meta}
+\usetikzlibrary{shadows, patterns, patterns.meta}
 \RequirePackage{keyval}
 \newcommand\rtfont{\usefont{T1}{phv}{m}{n}}
 \@ifpackagelater{pgf}{2008/01/15}
@@ -407,16 +407,24 @@ Please update pgf to version 2.10 minimum!\MessageBreak
   \yyy = \yy \advance \yyy by \RTExecHeight\sy
   \@compute@xxx{#4}
 
-  \ifx\RTTaskPattern\@empty
-    \ifx\RTTaskPatternColor\@empty
-      \def\RTTaskPatternColorOption{}
-    \fi
+  \ifx\RTTaskPatternColor\@empty
+    \def\RTTaskPatternColorOption{}
   \else
     \def\RTTaskPatternColorOption{pattern color=\RTTaskPatternColor}
   \fi
-  \typeout{Valeur de la variable RTTaskPattern : '\RTTaskPattern'}
 
-\edef\RTTaskExecOptions{fill=\RTTaskColor,\RTTaskFill,draw=\RTLineColor, thick, pattern={\RTTaskPattern}, \RTTaskPatternColorOption}
+  \edef\RTTaskExecOptions{
+    fill=\RTTaskColor,
+    \RTTaskFill,
+    draw=\RTLineColor,
+    thick
+  }
+  
+  \ifx\RTTaskPattern\@empty
+  \else
+    \edef\RTTaskExecOptions{\RTTaskExecOptions, pattern=\RTTaskPattern, \RTTaskPatternColorOption}
+  \fi
+
 \expandafter\draw\expandafter[\RTTaskExecOptions] (\xx,\yy) rectangle (\xxx,\yyy);
   \advance \xx by \xxx \xx = .5\xx!!
   \advance \yy by .5\RTExecHeight\sy
