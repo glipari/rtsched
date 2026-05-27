@@ -7,6 +7,14 @@ Author: Giuseppe Lipari (g.lipari@sssup.it)
 Version: 2.0.1
 Date:    2023/04/21
 
+---
+
+## Announcement 
+
+From 26/05/2026 the project has been moved to Codeberg. No further updates will be made to this repository. 
+
+---
+
 This package contains the rtsched package for drawing GANTT charts
 (chronograms). The package can be useful for drawing real-time timing
 diagrams in LaTeX, as often needs to be done for preparing articles,
